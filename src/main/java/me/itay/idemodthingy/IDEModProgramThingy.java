@@ -1,7 +1,10 @@
-package com.example.examplemod;
+package me.itay.idemodthingy;
 
 import com.mrcrayfish.device.api.ApplicationManager;
 
+import me.itay.idemodthingy.api.IDELanguageManager;
+import me.itay.idemodthingy.api.IDELanguageSupport;
+import me.itay.idemodthingy.languages.text.IDELanguageText;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Mod;
@@ -17,6 +20,8 @@ public class IDEModProgramThingy
     @EventHandler
     public void init(FMLInitializationEvent event)
     {
+    	IDELanguageManager.addSupport("Text", new IDELanguageSupport(new IDELanguageText()));
+    	
     	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:idethingy"), IDE.class);
     }
 }

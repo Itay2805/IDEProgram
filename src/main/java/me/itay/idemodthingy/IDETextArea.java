@@ -1,4 +1,4 @@
-package com.example.examplemod;
+package me.itay.idemodthingy;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -10,6 +10,7 @@ import org.lwjgl.input.Keyboard;
 import com.mrcrayfish.device.api.app.Component;
 import com.mrcrayfish.device.core.Laptop;
 
+import me.itay.idemodthingy.api.IDELanguageHighlight;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -30,10 +31,10 @@ public class IDETextArea extends Component {
 	
 	private int backgroundColour = Color.DARK_GRAY.getRGB();
 	private int borderColour = Color.BLACK.getRGB();
-	private IDELanguage language;
+	private IDELanguageHighlight language;
 	private FontRenderer font;
 	
-	public IDETextArea(int left, int top, int width, int height, IDELanguage language) {
+	public IDETextArea(int left, int top, int width, int height, IDELanguageHighlight language) {
 		super(left, top);
 		this.width = width;
 		this.height = height;
@@ -169,7 +170,7 @@ public class IDETextArea extends Component {
 	}
 	
 	public void setText(String text) {
-		String[] lines = text.split(" ");
+		String[] lines = text.split("\n");
 		this.lines = new ArrayList<>();
 		for(String line : lines) {
 			this.lines.add(line);

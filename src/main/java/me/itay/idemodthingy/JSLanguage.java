@@ -1,8 +1,10 @@
-package com.example.examplemod;
+package me.itay.idemodthingy;
 
 import java.awt.Color;
 
-public class JSLanguage implements IDELanguage {
+import me.itay.idemodthingy.api.IDELanguageHighlight;
+
+public class JSLanguage implements IDELanguageHighlight {
 	
 	private static final String WITH_DELIMITER = "((?<=%1$s)|(?=%1$s))";
 
