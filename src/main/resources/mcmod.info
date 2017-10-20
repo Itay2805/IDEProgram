@@ -1,0 +1,16 @@
+[
+{
+  "modid": "idemodthingy",
+  "name": "IDE Mod",
+  "description": "Create programs inside of minecraft using JavaScript!",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Itay Almog"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
