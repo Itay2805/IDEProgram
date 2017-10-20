@@ -1,7 +1,9 @@
 package com.example.examplemod;
 
 import java.awt.Color;
-import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 
 import org.lwjgl.input.Keyboard;
 
@@ -11,19 +13,18 @@ import com.mrcrayfish.device.core.Laptop;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ChatAllowedCharacters;
-import scala.collection.parallel.ParIterableLike.Min;
 
 public class IDETextArea extends Component {
 	
 	private static final int PADDING = 2;
 
 	private int width, height;
-	private String text = "var i = 4;\nvar b = 0;";
+	private List<String> lines = new ArrayList<>();
 	private int updateCounter = 0;
-	private int cursorIndex = 0;
+	private int cursorX = 0;
+	private int cursorY = 0;
 	
 	private int backgroundColour = Color.DARK_GRAY.getRGB();
 	private int borderColour = Color.BLACK.getRGB();
@@ -35,6 +36,8 @@ public class IDETextArea extends Component {
 		this.width = width;
 		this.height = height;
 		this.language = language;
+		
+		lines.add("");
 		
 		font = Minecraft.getMinecraft().fontRendererObj;
 	}
@@ -50,55 +53,110 @@ public class IDETextArea extends Component {
 		Gui.drawRect(xPosition, yPosition, xPosition + width, yPosition + height, borderColour);
 		Gui.drawRect(xPosition + 1, yPosition + 1, xPosition + width - 1, yPosition + height - 1, backgroundColour);
 		
-		char[] arr = text.toCharArray();
-		String[] textToRender = new String(arr).split(" ");
-		int currentX = 0;
-		for(String word : textToRender) {
-			font.drawSplitString(word + " ", xPosition + PADDING + 1 + currentX, yPosition + PADDING + 2, width - PADDING * 2 - 2, language.getKeywordColor(word));
-			currentX += font.getStringWidth(word + " ");
+		int currentY = 0;
+		for(String text : lines) {
+			String[] textToRender = language.tokenize(text);
+			int currentX = 0;
+			for(String word : textToRender) {
+				if(currentX + font.getStringWidth(word) >= width) {
+					currentX = 0;
+					currentY += font.FONT_HEIGHT;
+				}
+				font.drawSplitString(word + " ", xPosition + PADDING + 1 + currentX, yPosition + PADDING + 2 + currentY, width - PADDING * 2 - 2, language.getKeywordColor(word));
+				currentX += font.getStringWidth(word);
+			}
+			currentY += font.FONT_HEIGHT;
 		}
 		
-		if(updateCounter / 2 % 6 == 0) {			
-			font.drawSplitString("_", xPosition + PADDING + 1 + cursorIndex, yPosition + PADDING + 2, width - PADDING * 2 - 2, Color.WHITE.getRGB());
+		
+		if(updateCounter / 2 % 6 == 0) {
+			int cursorX = font.getStringWidth(getCurrentLine().substring(0, this.cursorX));
+			int cursorY = this.cursorY * font.FONT_HEIGHT;
+			font.drawSplitString("_", xPosition + PADDING + 1 + cursorX, yPosition + PADDING + 2 + cursorY, width - PADDING * 2 - 2, Color.WHITE.getRGB());
 		}
 	}
 	
 	@Override
 	public void handleKeyTyped(char character, int code) {
+		int index = cursorX + cursorY * (width / font.getCharWidth('_'));
 		switch(code)  {
 			case Keyboard.KEY_BACK:
-				if(cursorIndex <= 0 || cursorIndex > text.length()) {
-					return;
+				if(cursorY == 0 && getCurrentLine().isEmpty()) break;
+				if(getCurrentLine().isEmpty()) {
+					lines.remove(cursorY);
+					cursorY--;
+					cursorX = getCurrentLine().length();
+				}else {
+					String newLine = getCurrentLine().substring(0, cursorX - 1) + getCurrentLine().substring(cursorX);
+					lines.set(cursorY, newLine);
+					cursorX--;
 				}
-				text = text.substring(0, cursorIndex - 1) + text.substring(cursorIndex);
-				cursorIndex--;
-				break;
-			case Keyboard.KEY_DELETE:
-				System.out.println("DELETE");
-				if(cursorIndex < 0 || cursorIndex >= text.length()) {
-					return;
-				}
-				text = text.substring(0, cursorIndex) + text.substring(cursorIndex + 1);
-				cursorIndex--;
-				break;					
+				break;				
 			case Keyboard.KEY_NUMPADENTER:
-				text += "\n";
+			case Keyboard.KEY_RETURN:
+				if(lines.size() - 1 > cursorY) {
+					lines.add(cursorY, "");
+				}else {					
+					lines.add("");
+				}
+				cursorY++;
+				cursorX = 0;
 				break;
+			case Keyboard.KEY_TAB:
+				lines.set(cursorY, getCurrentLine().substring(0, cursorX) + "    " + getCurrentLine().substring(cursorX));
+				cursorX += 4;
+				break;
+//			case Keyboard.KEY_RIGHT:
+//				cursorX++;
+//				if(cursorX + 1 >= (width / font.getStringWidth(getCurrentLine().substring(0, this.cursorX))) && cursorY + 1 < lines.size()) {
+//					cursorX = 0;
+//					cursorY++;
+//					if(lines.size() >= cursorY) {
+//						lines.add("");
+//					}
+//				}
+//				break;
+//			case Keyboard.KEY_LEFT:
+//				cursorX--;
+//				if(cursorX < 0) {
+//					cursorX = 0;
+//					cursorY--;
+//					if(lines.size() >= cursorY) {
+//						lines.add("");
+//					}
+//				}
+//				break;
 			default:
 				if(ChatAllowedCharacters.isAllowedCharacter(character)) {
-					text = text.substring(0, cursorIndex) + character + text.substring(cursorIndex);					
-					cursorIndex++;
+					lines.set(cursorY, getCurrentLine().substring(0, cursorX) + character + getCurrentLine().substring(cursorX));
+					cursorX++;
 				}
 				break;
 		}
 	}
 	
+	private String getCurrentLine() {
+		return lines.get(cursorY);
+	}
+	
+	public List<String> getLines() {
+		return lines;
+	}
+	
 	public String getText() {
-		return text;
+		StringJoiner joiner = new StringJoiner("\n");
+		for(String line : lines) {
+			joiner.add(line);
+		}
+		return joiner.toString();
 	}
 	
 	public void setText(String text) {
-		this.text = text;
+		String[] lines = text.split(" ");
+		this.lines = new ArrayList<>();
+		for(String line : lines) {
+			this.lines.add(line);
+		}
 	}
 
 }
