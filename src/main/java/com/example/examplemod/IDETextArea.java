@@ -25,6 +25,8 @@ public class IDETextArea extends Component {
 	private int updateCounter = 0;
 	private int cursorX = 0;
 	private int cursorY = 0;
+	private int lastX = 0;
+	private int lastY = 0;
 	
 	private int backgroundColour = Color.DARK_GRAY.getRGB();
 	private int borderColour = Color.BLACK.getRGB();
@@ -54,7 +56,16 @@ public class IDETextArea extends Component {
 		Gui.drawRect(xPosition + 1, yPosition + 1, xPosition + width - 1, yPosition + height - 1, backgroundColour);
 		
 		int currentY = 0;
-		for(String text : lines) {
+		int from = cursorY - (height / font.FONT_HEIGHT);
+		if(from < 0) {
+			from = 0;
+		}
+		int to = from + (height / font.FONT_HEIGHT);
+		if(to > lines.size()) {
+			to = lines.size();
+		}
+		for(int i = from; i < to; i++) {
+			String text = lines.get(i);
 			String[] textToRender = language.tokenize(text);
 			int currentX = 0;
 			for(String word : textToRender) {
@@ -69,11 +80,13 @@ public class IDETextArea extends Component {
 		}
 		
 		
-		if(updateCounter / 2 % 6 == 0) {
+		if(updateCounter / 2 % 6 == 0 || lastX != cursorX || lastY != cursorY) {
 			int cursorX = font.getStringWidth(getCurrentLine().substring(0, this.cursorX));
-			int cursorY = this.cursorY * font.FONT_HEIGHT;
+			int cursorY = (this.cursorY - from) * font.FONT_HEIGHT;
 			font.drawSplitString("_", xPosition + PADDING + 1 + cursorX, yPosition + PADDING + 2 + cursorY, width - PADDING * 2 - 2, Color.WHITE.getRGB());
 		}
+		lastX = cursorX;
+		lastY = cursorY;
 	}
 	
 	@Override
@@ -106,26 +119,30 @@ public class IDETextArea extends Component {
 				lines.set(cursorY, getCurrentLine().substring(0, cursorX) + "    " + getCurrentLine().substring(cursorX));
 				cursorX += 4;
 				break;
-//			case Keyboard.KEY_RIGHT:
-//				cursorX++;
-//				if(cursorX + 1 >= (width / font.getStringWidth(getCurrentLine().substring(0, this.cursorX))) && cursorY + 1 < lines.size()) {
-//					cursorX = 0;
-//					cursorY++;
-//					if(lines.size() >= cursorY) {
-//						lines.add("");
-//					}
-//				}
-//				break;
-//			case Keyboard.KEY_LEFT:
-//				cursorX--;
-//				if(cursorX < 0) {
-//					cursorX = 0;
-//					cursorY--;
-//					if(lines.size() >= cursorY) {
-//						lines.add("");
-//					}
-//				}
-//				break;
+			case Keyboard.KEY_RIGHT:
+				{
+					boolean hasNewLine = cursorY + 1 < lines.size();
+					boolean hasMoreSpace = cursorX + 1 < getCurrentLine().length();
+					if(hasMoreSpace) {					
+						cursorX++;
+					}else if(hasNewLine) {
+						cursorX = 0;
+						cursorY++;
+					}
+					break;	
+				}					
+			case Keyboard.KEY_LEFT:
+				{
+					boolean hasNewLine = cursorY - 1 >= 0;
+					boolean hasMoreSpace = cursorX - 1 >= 0;
+					if(hasMoreSpace) {					
+						cursorX--;
+					}else if(hasNewLine) {
+						cursorY--;
+						cursorX = getCurrentLine().length();
+					}
+					break;					
+				}
 			default:
 				if(ChatAllowedCharacters.isAllowedCharacter(character)) {
 					lines.set(cursorY, getCurrentLine().substring(0, cursorX) + character + getCurrentLine().substring(cursorX));
