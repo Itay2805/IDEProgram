@@ -83,7 +83,11 @@ public class IDETextArea extends Component {
 		
 		
 		if(updateCounter / 2 % 6 == 0 || lastX != cursorX || lastY != cursorY) {
-			int cursorX = font.getStringWidth(getCurrentLine().substring(0, this.cursorX));
+			int toX = this.cursorX;
+			if(toX > getCurrentLine().length()) {
+				toX = getCurrentLine().length();
+			}
+			int cursorX = font.getStringWidth(getCurrentLine().substring(0, toX));
 			int cursorY = (this.cursorY - from) * font.FONT_HEIGHT;
 			font.drawSplitString("_", xPosition + PADDING + 1 + cursorX, yPosition + PADDING + 2 + cursorY, width - PADDING * 2 - 2, Color.WHITE.getRGB());
 		}
@@ -96,26 +100,32 @@ public class IDETextArea extends Component {
 		int index = cursorX + cursorY * (width / font.getCharWidth('_'));
 		switch(code)  {
 			case Keyboard.KEY_BACK:
-				if(cursorY == 0 && getCurrentLine().isEmpty()) break;
+				if(cursorY == 0 && cursorX == 0) break;
 				if(getCurrentLine().isEmpty()) {
 					lines.remove(cursorY);
 					cursorY--;
 					cursorX = getCurrentLine().length();
 				}else {
-					String newLine = getCurrentLine().substring(0, cursorX - 1) + getCurrentLine().substring(cursorX);
-					lines.set(cursorY, newLine);
-					cursorX--;
+					if(cursorX == 0) {
+						String oldLine = getCurrentLine();
+						lines.remove(cursorY);
+						cursorY--;
+						cursorX = getCurrentLine().length();
+						lines.set(cursorY, getCurrentLine() + oldLine);
+					}else {
+						String newLine = getCurrentLine().substring(0, cursorX - 1) + getCurrentLine().substring(cursorX);
+						lines.set(cursorY, newLine);
+						cursorX--;						
+					}
 				}
 				break;				
 			case Keyboard.KEY_NUMPADENTER:
 			case Keyboard.KEY_RETURN:
-				if(lines.size() - 1 > cursorY) {
-					cursorY++;
-					lines.add(cursorY, "");
-				}else {
-					lines.add("");
-				}
+				String oldLine = getCurrentLine().substring(0, cursorX);
+				String newLine = getCurrentLine().substring(cursorX);
+				lines.set(cursorY, oldLine);
 				cursorY++;
+				lines.add(cursorY, newLine);
 				cursorX = 0;
 				break;
 			case Keyboard.KEY_TAB:
@@ -125,7 +135,7 @@ public class IDETextArea extends Component {
 			case Keyboard.KEY_RIGHT:
 				{
 					boolean hasNewLine = cursorY + 1 < lines.size();
-					boolean hasMoreSpace = cursorX + 1 < getCurrentLine().length();
+					boolean hasMoreSpace = cursorX + 1 <= getCurrentLine().length();
 					if(hasMoreSpace) {					
 						cursorX++;
 					}else if(hasNewLine) {
@@ -144,7 +154,7 @@ public class IDETextArea extends Component {
 						cursorY--;
 						cursorX = getCurrentLine().length();
 					}
-					break;					
+					break;	
 				}
 			default:
 				if(ChatAllowedCharacters.isAllowedCharacter(character)) {
