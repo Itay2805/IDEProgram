@@ -1,2 +1,3 @@
 app.idemodthingy.ide.name=IDE
 app.idemodthingy.runtime.name=Runtime
+app.idemodthingy.glcontexttest.name=OpenGL1.1 Test

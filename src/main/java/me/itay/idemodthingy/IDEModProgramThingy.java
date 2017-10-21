@@ -32,5 +32,6 @@ public class IDEModProgramThingy
 
     	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:ide"), IDE.class);
     	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:runtime"), Runner.class);
+    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:glcontexttest"), OpenGLTest.class);
     }
 }
