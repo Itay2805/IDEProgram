@@ -1,5 +1,9 @@
 package me.itay.idemodthingy;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+
 import com.mrcrayfish.device.api.app.Application;
 import com.mrcrayfish.device.api.app.Component;
 import com.mrcrayfish.device.api.app.Dialog;
@@ -51,11 +55,33 @@ public class IDE extends Application {
 		addComponent(text);
 		
 		IDE curr = this;
-		
+
 		run.setClickListener(new ClickListener() {
 			@Override
 			public void onClick(Component c, int mouseButton) {
-				// open terminal
+				if(support.getRuntime() == null) {
+					Message msg = new Message("This language has no runtime support!");
+					msg.setTitle("Error");
+					curr.openDialog(msg);
+				}else {
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					PrintStream stream = new PrintStream(baos);
+					String error = support.getRuntime().exe(curr, stream, text.getText());
+					if(error != null) {
+						Message msg = new Message(error);
+						msg.setTitle("Error");
+						curr.openDialog(msg);
+					}else {
+						String output = baos.toString();
+						if(output.trim().isEmpty()) {
+							output = "Run program succesfully!";
+						}
+						output = output.replaceAll("\r", "");
+						Message msg = new Message(output);
+						msg.setTitle("Output");
+						curr.openDialog(msg);						
+					}
+				}
 			}
 		});
 		
@@ -71,6 +97,7 @@ public class IDE extends Application {
 							if(lang == null) {
 								Message msg = new Message("Unknown Language");
 								msg.setTitle("Error");
+								curr.openDialog(msg);
 							}else {
 								curr.support = lang;
 								text.setLanguage(curr.support.getHighlight());
@@ -95,6 +122,18 @@ public class IDE extends Application {
 							String code = data.getString("code");
 							text.setText(code);
 						}
+						if(data.hasKey("lang")) {
+							String langName = data.getString("lang");
+							IDELanguageSupport lang = IDELanguageManager.getSupport().get(langName);
+							if(lang == null) {
+								Message msg = new Message("Unknown Language");
+								msg.setTitle("Error");
+								curr.openDialog(msg);
+							}else {
+								curr.support = lang;
+								text.setLanguage(curr.support.getHighlight());
+							}
+						}
 						return true;
 					}
 				});
@@ -107,6 +146,7 @@ public class IDE extends Application {
 			public void onClick(Component c, int mouseButton) {
 				NBTTagCompound data = new NBTTagCompound();
 				data.setString("code", text.getText());
+				data.setString("lang", support.getName());
 				SaveFile file = new SaveFile(curr, new File("", curr, data));
 				file.setResponseHandler(new ResponseHandler<File>() {
 					@Override
