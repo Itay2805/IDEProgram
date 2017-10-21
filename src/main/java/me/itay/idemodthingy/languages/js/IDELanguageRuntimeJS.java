@@ -18,12 +18,20 @@ public class IDELanguageRuntimeJS implements IDELanguageRuntime {
 			"\n" + 
 			"function Button(text, x, y, width, height) {\n" + 
 			"	this.handle = runtime.createButton(text, x, y, width, height);\n" + 
+			"	this.setClickListener = function(handler) {\n" + 
+			"		runtime.button_setClickListener(this.handle, handler);\n" + 
+			"	};\n" + 
 			"}\n" + 
 			"\n" + 
 			"var app = {};\n" + 
 			"\n" + 
 			"app.addComponent = function(comp) {\n" + 
 			"	runtime.addComponent(comp.handle);\n" + 
+			"}\n" + 
+			"\n" + 
+			"app.message = function(text, title) {\n" + 
+			"	if(!title) title = \"Message\";\n" + 
+			"	runtime.message(text, title);\n" + 
 			"}";
 	
 	@Override
@@ -34,8 +42,8 @@ public class IDELanguageRuntimeJS implements IDELanguageRuntime {
 			engine.eval(BOOTSTRAP_CODE);
 			engine.eval(code);
 			return null;
-		} catch (Exception e) {
-			return e.getMessage().replaceAll("\r", "");
+		} catch (Throwable e) {
+			return e.getMessage().replaceAll("", "");
 		}
 	}
 	

@@ -50,10 +50,10 @@ public class IDELanguageJavaScript implements IDELanguageHighlight {
 			case "throw":
 			case "try":
 			case "for":
-			case "var":
 				color = 0xC582BA;
 				break;
 			case "this":
+			case "var":
 			case "instanceof":
 			case "typeof":
 			case "debugger":

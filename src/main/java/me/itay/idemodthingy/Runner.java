@@ -48,16 +48,15 @@ public class Runner extends Application {
 							Message msg = new Message(error);
 							msg.setTitle("Error");
 							openDialog(msg);
-						}else {
-							String output = baos.toString();
-							if(output.trim().isEmpty()) {
-								output = "Run program succesfully!";
-							}
-							output = output.replaceAll("\r", "");
-							Message msg = new Message(output);
-							msg.setTitle("Output");
-							openDialog(msg);					
 						}
+						String output = baos.toString();
+						if(output.trim().isEmpty()) {
+							output = "Run program succesfully!";
+						}
+						output = output.replaceAll("\r", "");
+						Message msg = new Message(output);
+						msg.setTitle("Output");
+						openDialog(msg);					
 					}
 				}
 				return true;
