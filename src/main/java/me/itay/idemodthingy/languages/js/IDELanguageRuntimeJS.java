@@ -17,10 +17,10 @@ public class IDELanguageRuntimeJS implements IDELanguageRuntime {
 	private static String bootstrap;
 	private static String opengl;
 	static {
-		InputStream stream = IDELanguageRuntimeJS.class.getResourceAsStream("bootstrap.js");
+		InputStream stream = IDELanguageRuntimeJS.class.getResourceAsStream("/assets/idemodthingy/scripts/js/bootstrap.js");
 		bootstrap = convertStreamToString(stream);
 
-		stream = IDELanguageRuntimeJS.class.getResourceAsStream("opengl.js");
+		stream = IDELanguageRuntimeJS.class.getResourceAsStream("/assets/idemodthingy/scripts/js/opengl.js");
 		opengl = convertStreamToString(stream);
 	}
 	
