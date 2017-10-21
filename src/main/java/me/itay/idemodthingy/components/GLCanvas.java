@@ -39,9 +39,7 @@ public class GLCanvas extends Component {
 		ByteBuffer buffer = ByteBuffer.allocate(width * height * 3);
 		gl.readPixels(0, 0, width, height, GL.RGB, GL.BYTE, buffer);
 		image.getRaster().setDataElements(0, 0, width, height, buffer.array());
-
-		// BufferedImage rotated = rotate(image, 180);
-
+		
 		rc = Minecraft.getMinecraft().getTextureManager().getDynamicTextureLocation("opengl11_context_image", new DynamicTexture(image));
 		
 		mc.getRenderManager().renderEngine.bindTexture(rc);

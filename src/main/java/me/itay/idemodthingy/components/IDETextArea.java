@@ -61,7 +61,7 @@ public class IDETextArea extends Component {
 		if(from < 0) {
 			from = 0;
 		}
-		int to = from + (height / font.FONT_HEIGHT);
+		int to = from + (height / font.FONT_HEIGHT) + 2;
 		if(to > lines.size()) {
 			to = lines.size();
 		}
@@ -110,8 +110,9 @@ public class IDETextArea extends Component {
 			case Keyboard.KEY_NUMPADENTER:
 			case Keyboard.KEY_RETURN:
 				if(lines.size() - 1 > cursorY) {
+					cursorY++;
 					lines.add(cursorY, "");
-				}else {					
+				}else {
 					lines.add("");
 				}
 				cursorY++;

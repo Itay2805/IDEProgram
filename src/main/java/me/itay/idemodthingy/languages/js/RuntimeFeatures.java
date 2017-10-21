@@ -10,6 +10,7 @@ import com.mrcrayfish.device.api.app.listener.ClickListener;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import me.itay.idemodthingy.Runner;
+import me.itay.idemodthingy.components.GLCanvas;
 import scala.util.control.Exception;
 
 public class RuntimeFeatures {
@@ -30,11 +31,23 @@ public class RuntimeFeatures {
 		return new Button(text, x, y, width, height);
 	}
 	
+	public GLCanvas createGLCanvas(int x, int y, int width, int height) {
+		return new GLCanvas(x, y, width, height);
+	}
+	
 	public void addComponent(Component component) {
 		if(application instanceof Runner) {
 			((Runner)application).addDynamicComponent(component);
 		}else {
 			throw new RuntimeException("Can not add components while in IDE");
+		}
+	}
+	
+	public void onRender(Runnable mirror) {
+		if(application instanceof Runner) {
+			((Runner)application).setOnRender(mirror);
+		}else {
+			throw new RuntimeException("Can not set on render while in IDE");
 		}
 	}
 	
