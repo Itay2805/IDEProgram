@@ -26,9 +26,20 @@ public class IDELanguageJavaScript implements IDELanguageHighlight {
 	}
 	
 	private String lastToken = "";
+	private boolean quate = false;
 	
 	@Override
 	public int getKeywordColor(String text) {
+		if(text.contains("\"")) {
+			if(quate) {
+				quate = false;
+				return 0xCE9172;
+			}
+			quate = true;
+		}
+		if(quate) {
+			return 0xCE9172;
+		}
 		if(text.length() == 0) {
 			return 0;
 		}

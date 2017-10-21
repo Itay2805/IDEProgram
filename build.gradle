@@ -10,14 +10,20 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
+repositories {
+   flatDir {
+       dirs 'lib'
+   }
+}
 
-version = "1.0"
-group = "com.yourname.modid" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "modid"
 
-sourceCompatibility = targetCompatibility = "1.6" // Need this here so eclipse task generates correctly.
+version = "1.1.0"
+group = "me.itay.idemodthingy" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "idemodthingy"
+
+sourceCompatibility = targetCompatibility = "1.8" // Need this here so eclipse task generates correctly.
 compileJava {
-    sourceCompatibility = targetCompatibility = "1.6"
+    sourceCompatibility = targetCompatibility = "1.8"
 }
 
 minecraft {
@@ -33,7 +39,18 @@ minecraft {
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 
+task fatJar(type: Jar) {
+        baseName = project.name + '-all'
+        from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+        with jar
+}
+
 dependencies {
+
+    compile name: 'device-api-0.1.0-1.11.2'
+    compile name: 'nashorn'
+    compile name: 'joml-1.9.4'
+    
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
     //compile "some.group:artifact:version:classifier"

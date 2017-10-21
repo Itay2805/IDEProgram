@@ -6,6 +6,9 @@ import com.mrcrayfish.device.api.app.Application;
 import com.mrcrayfish.device.api.app.Component;
 import com.mrcrayfish.device.api.app.Dialog.Message;
 import com.mrcrayfish.device.api.app.component.Button;
+import com.mrcrayfish.device.api.app.component.Label;
+import com.mrcrayfish.device.api.app.component.TextArea;
+import com.mrcrayfish.device.api.app.component.TextField;
 import com.mrcrayfish.device.api.app.listener.ClickListener;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
@@ -33,6 +36,18 @@ public class RuntimeFeatures {
 	
 	public GLCanvas createGLCanvas(int x, int y, int width, int height) {
 		return new GLCanvas(x, y, width, height);
+	}
+	
+	public TextArea createTextArea(int x, int y, int width, int height) {
+		return new TextArea(x, y, width, height);
+	}
+	
+	public TextField createTextFeild(int x, int y, int width) {
+		return new TextField(x, y, width);
+	}
+	
+	public Label createLabel(String text, int x, int y) {
+		return new Label(text, x, y);
 	}
 	
 	public void addComponent(Component component) {
