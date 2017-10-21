@@ -1,4 +1,4 @@
-package me.itay.idemodthingy;
+package me.itay.idemodthingy.components;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -70,6 +70,7 @@ public class IDETextArea extends Component {
 			String[] textToRender = language.tokenize(text);
 			int currentX = 0;
 			for(String word : textToRender) {
+				if(word.length() == 0) continue;
 				if(currentX + font.getStringWidth(word) >= width) {
 					currentX = 0;
 					currentY += font.FONT_HEIGHT;
@@ -153,6 +154,10 @@ public class IDETextArea extends Component {
 		}
 	}
 	
+	public void setLanguage(IDELanguageHighlight language) {
+		this.language = language;
+	}
+	
 	private String getCurrentLine() {
 		return lines.get(cursorY);
 	}
@@ -175,6 +180,24 @@ public class IDETextArea extends Component {
 		for(String line : lines) {
 			this.lines.add(line);
 		}
+		cursorX = 0;
+		cursorY = 0;
+	}
+	
+	public int getCursorX() {
+		return cursorX;
+	}
+	
+	public int getCursorY() {
+		return cursorY;
+	}
+	
+	public void setCursorX(int cursorX) {
+		this.cursorX = cursorX;
+	}
+	
+	public void setCursorY(int cursorY) {
+		this.cursorY = cursorY;
 	}
 
 }

@@ -1,20 +1,20 @@
 package me.itay.idemodthingy;
 
-import java.util.function.Predicate;
-
-import org.lwjgl.input.Mouse;
-
 import com.mrcrayfish.device.api.app.Application;
 import com.mrcrayfish.device.api.app.Component;
 import com.mrcrayfish.device.api.app.Dialog;
+import com.mrcrayfish.device.api.app.Dialog.Input;
+import com.mrcrayfish.device.api.app.Dialog.Message;
 import com.mrcrayfish.device.api.app.Dialog.OpenFile;
 import com.mrcrayfish.device.api.app.Dialog.ResponseHandler;
 import com.mrcrayfish.device.api.app.Dialog.SaveFile;
 import com.mrcrayfish.device.api.app.component.Button;
-import com.mrcrayfish.device.api.app.component.TextArea;
 import com.mrcrayfish.device.api.app.listener.ClickListener;
 import com.mrcrayfish.device.api.io.File;
 
+import me.itay.idemodthingy.api.IDELanguageManager;
+import me.itay.idemodthingy.api.IDELanguageSupport;
+import me.itay.idemodthingy.components.IDETextArea;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class IDE extends Application {
@@ -24,6 +24,8 @@ public class IDE extends Application {
 	private Button save;
 	private Button load;
 	private IDETextArea text;
+	
+	private IDELanguageSupport support = IDELanguageManager.getSupport().get("text");
 	
 	private static final int WIDTH 	= 360;
 	private static final int HEIGHT 	= 160;
@@ -40,7 +42,7 @@ public class IDE extends Application {
 		run = new Button("Run", BUTTONS_HEIGHT * 2 + BOUNDS_SIZE * 2, BOUNDS_SIZE, BUTTONS_HEIGHT * 2, BUTTONS_HEIGHT);
 		save = new Button("Save", BUTTONS_HEIGHT * 4 + BOUNDS_SIZE * 3, BOUNDS_SIZE, BUTTONS_HEIGHT * 2, BUTTONS_HEIGHT);
 		load = new Button("Load", BUTTONS_HEIGHT * 6 + BOUNDS_SIZE * 4, BOUNDS_SIZE, BUTTONS_HEIGHT * 2, BUTTONS_HEIGHT);
-		text = new IDETextArea(BOUNDS_SIZE, BOUNDS_SIZE * 2 + BUTTONS_HEIGHT, WIDTH - (BOUNDS_SIZE * 2), HEIGHT - (BOUNDS_SIZE * 3 + BUTTONS_HEIGHT), new JSLanguage());
+		text = new IDETextArea(BOUNDS_SIZE, BOUNDS_SIZE * 2 + BUTTONS_HEIGHT, WIDTH - (BOUNDS_SIZE * 2), HEIGHT - (BOUNDS_SIZE * 3 + BUTTONS_HEIGHT), support.getHighlight());
 		
 		addComponent(load);
 		addComponent(save);
@@ -48,7 +50,38 @@ public class IDE extends Application {
 		addComponent(language);
 		addComponent(text);
 		
-		Application curr = this;
+		IDE curr = this;
+		
+		run.setClickListener(new ClickListener() {
+			@Override
+			public void onClick(Component c, int mouseButton) {
+				// open terminal
+			}
+		});
+		
+		language.setClickListener(new ClickListener() {
+			@Override
+			public void onClick(Component c, int mouseButton) {
+				Input input = new Input();
+				input.setResponseHandler(new ResponseHandler<String>() {
+					@Override
+					public boolean onResponse(boolean success, String e) {
+						if(success) {
+							IDELanguageSupport lang = IDELanguageManager.getSupport().get(e);
+							if(lang == null) {
+								Message msg = new Message("Unknown Language");
+								msg.setTitle("Error");
+							}else {
+								curr.support = lang;
+								text.setLanguage(curr.support.getHighlight());
+							}
+						}
+						return true;
+					}
+				});
+				curr.openDialog(input);
+			}
+		});
 		
 		load.setClickListener(new ClickListener() {
 			@Override
