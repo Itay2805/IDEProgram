@@ -15,5 +15,10 @@ public class IDELanguageText implements IDELanguageHighlight {
 	public int getKeywordColor(String text) {
 		return Color.WHITE.getRGB();
 	}
+
+	@Override
+	public void reset() {
+		
+	}
 	
 }

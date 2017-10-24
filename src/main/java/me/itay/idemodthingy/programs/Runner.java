@@ -1,4 +1,4 @@
-package me.itay.idemodthingy;
+package me.itay.idemodthingy.programs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -34,37 +34,7 @@ public class Runner extends Application {
 			@Override
 			public boolean onResponse(boolean success, File e) {
 				NBTTagCompound data = e.getData();
-				if(data.hasKey("code")) {							
-					code = data.getString("code");
-				}
-				if(data.hasKey("lang")) {
-					String langName = data.getString("lang");
-					IDELanguageSupport lang = IDELanguageManager.getSupport().get(langName);
-					if(lang == null) {
-						Message msg = new Message("Unknown Language");
-						msg.setTitle("Error");
-						openDialog(msg);
-					}else {
-						support = lang;
-
-						ByteArrayOutputStream baos = new ByteArrayOutputStream();
-						PrintStream stream = new PrintStream(baos);
-						String error = support.getRuntime().exe(runner, stream, code);
-						if(error != null) {
-							Message msg = new Message(error);
-							msg.setTitle("Error");
-							openDialog(msg);
-						}
-						String output = baos.toString();
-						if(output.trim().isEmpty()) {
-							output = "Run program succesfully!";
-						}
-						output = output.replaceAll("\r", "");
-						Message msg = new Message(output);
-						msg.setTitle("Output");
-						openDialog(msg);					
-					}
-				}
+				System.out.println(data);
 				return true;
 			}
 		});

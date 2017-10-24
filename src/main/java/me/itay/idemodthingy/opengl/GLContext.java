@@ -326,6 +326,18 @@ public class GLContext {
 	}
 	
 	/**
+	 * Specify a vertex
+	 */
+	public void vertex2f(float x, float y) {
+		if(this.beginMode == -1) {
+			this.err = INVALID_OPERATION;
+			return;
+		}
+		
+		beginVertices.add(new Vertex(x, y, 0, beginColor, beginTexCoord));
+	}
+	
+	/**
 	 * Specify the matrix to apply operations on
 	 */
 	public void matrixMode(int mode) {

@@ -1,6 +1,7 @@
 package me.itay.idemodthingy.languages.js;
 
 import java.io.PrintStream;
+import java.util.TreeMap;
 
 import com.mrcrayfish.device.api.app.Application;
 import com.mrcrayfish.device.api.app.Component;
@@ -12,20 +13,28 @@ import com.mrcrayfish.device.api.app.component.TextField;
 import com.mrcrayfish.device.api.app.listener.ClickListener;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
-import me.itay.idemodthingy.Runner;
 import me.itay.idemodthingy.components.GLCanvas;
+import me.itay.idemodthingy.programs.Runner;
+import scala.annotation.meta.field;
+import scala.collection.immutable.RedBlackTree.Tree;
 import scala.util.control.Exception;
 
 public class RuntimeFeatures {
 	
 	private PrintStream out;
 	private Application application;
+	private TreeMap<String, String> files;
 	
-	public RuntimeFeatures(Application application, PrintStream out) {
+	public RuntimeFeatures(Application application, PrintStream out, TreeMap<String, String> files) {
 		this.out = out;
 		this.application = application;
+		this.files = files;
 	}
 
+	public String getJSFile(String file) {
+		return files.get(file);
+	}
+	
 	public void print(Object output) {
 		out.println(output.toString());
 	}

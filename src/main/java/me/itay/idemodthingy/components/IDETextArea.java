@@ -14,6 +14,7 @@ import me.itay.idemodthingy.api.IDELanguageHighlight;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ChatAllowedCharacters;
 
@@ -28,6 +29,10 @@ public class IDETextArea extends Component {
 	private int cursorY = 0;
 	private int lastX = 0;
 	private int lastY = 0;
+	private int from = 0;
+	private int lineCount;
+	
+	private boolean editable = true;
 	
 	private int backgroundColour = Color.DARK_GRAY.getRGB();
 	private int borderColour = Color.BLACK.getRGB();
@@ -43,6 +48,8 @@ public class IDETextArea extends Component {
 		lines.add("");
 		
 		font = Minecraft.getMinecraft().fontRendererObj;
+		
+		lineCount = height / font.FONT_HEIGHT;
 	}
 	
 	@Override
@@ -56,47 +63,60 @@ public class IDETextArea extends Component {
 		Gui.drawRect(xPosition, yPosition, xPosition + width, yPosition + height, borderColour);
 		Gui.drawRect(xPosition + 1, yPosition + 1, xPosition + width - 1, yPosition + height - 1, backgroundColour);
 		
-		int currentY = 0;
-		int from = cursorY - (height / font.FONT_HEIGHT);
-		if(from < 0) {
-			from = 0;
-		}
-		int to = from + (height / font.FONT_HEIGHT) + 2;
-		if(to > lines.size()) {
+		int to = from + lineCount;
+		if(to >= lines.size()) {
 			to = lines.size();
 		}
+		
+		int currentY = 0;
 		for(int i = from; i < to; i++) {
 			String text = lines.get(i);
 			String[] textToRender = language.tokenize(text);
 			int currentX = 0;
 			for(String word : textToRender) {
 				if(word.length() == 0) continue;
-				if(currentX + font.getStringWidth(word) >= width) {
-					currentX = 0;
-					currentY += font.FONT_HEIGHT;
-				}
+//				if(currentX + font.getStringWidth(word) >= width) {
+//					currentX = 0;
+//					currentY += font.FONT_HEIGHT;
+//				}
 				font.drawSplitString(word + " ", xPosition + PADDING + 1 + currentX, yPosition + PADDING + 2 + currentY, width - PADDING * 2 - 2, language.getKeywordColor(word));
 				currentX += font.getStringWidth(word);
 			}
 			currentY += font.FONT_HEIGHT;
 		}
 		
-		
-		if(updateCounter / 2 % 6 == 0 || lastX != cursorX || lastY != cursorY) {
-			int toX = this.cursorX;
-			if(toX > getCurrentLine().length()) {
-				toX = getCurrentLine().length();
+		if(editable) {			
+			if(updateCounter / 2 % 6 == 0 || lastX != cursorX || lastY != cursorY) {
+				int toX = this.cursorX;
+				if(toX > getCurrentLine().length()) {
+					toX = getCurrentLine().length();
+				}
+				int cursorX = font.getStringWidth(getCurrentLine().substring(0, toX));
+				int cursorY = (this.cursorY - from) * font.FONT_HEIGHT;
+				font.drawSplitString("|", xPosition + PADDING + 1 + cursorX, yPosition + PADDING + 2 + cursorY, width - PADDING * 2 - 2, Color.WHITE.getRGB());
 			}
-			int cursorX = font.getStringWidth(getCurrentLine().substring(0, toX));
-			int cursorY = (this.cursorY - from) * font.FONT_HEIGHT;
-			font.drawSplitString("_", xPosition + PADDING + 1 + cursorX, yPosition + PADDING + 2 + cursorY, width - PADDING * 2 - 2, Color.WHITE.getRGB());
+			lastX = cursorX;
+			lastY = cursorY;
 		}
-		lastX = cursorX;
-		lastY = cursorY;
+		
+		language.reset();
 	}
 	
 	@Override
 	public void handleKeyTyped(char character, int code) {
+		if(!editable) return;
+		
+		if(GuiScreen.isKeyComboCtrlV(code)) {
+			String[] clipLines = GuiScreen.getClipboardString().replace("\r", "").replace("\r", "    ").split("\n");
+			for(String line : clipLines) {
+				lines.add(cursorY, line);
+				cursorY++;
+			}
+			
+			checkDown();
+			return;
+		}
+		
 		int index = cursorX + cursorY * (width / font.getCharWidth('_'));
 		switch(code)  {
 			case Keyboard.KEY_BACK:
@@ -118,6 +138,7 @@ public class IDETextArea extends Component {
 						cursorX--;						
 					}
 				}
+				checkUp();
 				break;				
 			case Keyboard.KEY_NUMPADENTER:
 			case Keyboard.KEY_RETURN:
@@ -127,10 +148,35 @@ public class IDETextArea extends Component {
 				cursorY++;
 				lines.add(cursorY, newLine);
 				cursorX = 0;
+				checkDown();
 				break;
 			case Keyboard.KEY_TAB:
 				lines.set(cursorY, getCurrentLine().substring(0, cursorX) + "    " + getCurrentLine().substring(cursorX));
 				cursorX += 4;
+				break;
+			case Keyboard.KEY_UP: 
+				{
+					if(cursorY - 1 >= 0) {
+						cursorY--;
+						if(getCurrentLine().length() < cursorX) {							
+							cursorX = getCurrentLine().length();
+						}
+					}
+					
+					checkUp();
+				}
+				break;
+			case Keyboard.KEY_DOWN: 
+				{
+					if(cursorY + 1 < lines.size()) {
+						cursorY++;
+						if(getCurrentLine().length() < cursorX) {							
+							cursorX = getCurrentLine().length();
+						}
+					}
+					
+					checkDown();
+				}
 				break;
 			case Keyboard.KEY_RIGHT:
 				{
@@ -142,6 +188,8 @@ public class IDETextArea extends Component {
 						cursorX = 0;
 						cursorY++;
 					}
+				
+					checkDown();
 					break;	
 				}					
 			case Keyboard.KEY_LEFT:
@@ -154,6 +202,8 @@ public class IDETextArea extends Component {
 						cursorY--;
 						cursorX = getCurrentLine().length();
 					}
+					
+					checkUp();
 					break;	
 				}
 			default:
@@ -162,6 +212,18 @@ public class IDETextArea extends Component {
 					cursorX++;
 				}
 				break;
+		}
+	}
+	
+	private void checkDown() {
+		if(cursorY >= lineCount + from) {
+			from = cursorY;
+		}
+	}
+	
+	private void checkUp() {
+		if(cursorY < from) {
+			from = cursorY;
 		}
 	}
 	
@@ -209,6 +271,10 @@ public class IDETextArea extends Component {
 	
 	public void setCursorY(int cursorY) {
 		this.cursorY = cursorY;
+	}
+		
+	public void setEditable(boolean editable) {
+		this.editable = editable;
 	}
 
 }

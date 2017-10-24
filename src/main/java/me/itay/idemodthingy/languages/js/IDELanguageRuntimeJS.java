@@ -3,6 +3,8 @@ package me.itay.idemodthingy.languages.js;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.TreeMap;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -31,13 +33,14 @@ public class IDELanguageRuntimeJS implements IDELanguageRuntime {
 	}
 	
 	@Override
-	public String exe(Application app, PrintStream out, String code) {
+	public String exe(Application app, PrintStream out, TreeMap<String, String> files) {
 		ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 		try {
-			engine.put("runtime", new RuntimeFeatures(app, out));
+			engine.put("runtime", new RuntimeFeatures(app, out, files));
 			engine.eval(bootstrap);
 			engine.eval(opengl);
-			engine.eval(code);
+			System.out.println(files.firstEntry());
+			if(!files.isEmpty()) engine.eval(files.firstEntry().getValue());
 			return null;
 		} catch (Throwable e) {
 			return e.getMessage().replaceAll("", "");

@@ -1,6 +1,18 @@
-var print = function(obj) {
+function print(obj) {
 	runtime.print(obj);
 }
+
+function require(file) {
+	if(require.cache[file]) {
+		return require.cache[file];
+	}
+	var code = runtime.getJSFile(file);
+	var jsCode = "(function() {" + code + "})()";
+	var result = eval(jsCode);
+	require.cache[file] = result;
+	return require.cache[file];
+}
+require.cache = {};
 
 function Button(text, x, y, width, height) {
 	this.handle = runtime.createButton(text, x, y, width, height);
@@ -25,6 +37,7 @@ function TextArea(x, y, width, height) {
 	this.setEditable = function(enabled) { return this.handle.setEditable(enabled); }
 	this.setPadding = function(paddig) { return this.handle.setPadding(paddig); }
 	this.setVisible = function(visible) { return this.handle.setVisible(visible); }
+	this.clear = function() { this.handle.clear(); }
 }
 
 function TextField(x, y, width) {
@@ -38,6 +51,7 @@ function TextField(x, y, width) {
 	this.setEditable = function(enabled) { return this.handle.setEditable(enabled); }
 	this.setPadding = function(paddig) { return this.handle.setPadding(paddig); }
 	this.setVisible = function(visible) { return this.handle.setVisible(visible); }
+	this.clear = function() { this.handle.clear(); }
 }
 
 function Label(text, x, y) {

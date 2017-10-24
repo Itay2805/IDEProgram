@@ -1,4 +1,4 @@
-package me.itay.idemodthingy;
+package me.itay.idemodthingy.programs;
 
 import java.nio.ByteBuffer;
 
@@ -23,7 +23,10 @@ public class OpenGLTest extends Application {
 	@Override
 	public void init() {
 		canvas = new GLCanvas(5, 5, WIDTH, HEIGHT);
+		setDefaultHeight(HEIGHT + 10);
+		setDefaultWidth(WIDTH + 10);
 		
+				
 		GLContext gl = canvas.getGl();
 		gl.enable(GL.TEXTURE_2D);
 		gl.enable(GL.DEPTH_TEST);

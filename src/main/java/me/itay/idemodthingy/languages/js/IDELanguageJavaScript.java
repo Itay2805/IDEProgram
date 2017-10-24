@@ -33,12 +33,12 @@ public class IDELanguageJavaScript implements IDELanguageHighlight {
 		if(text.contains("\"")) {
 			if(quate) {
 				quate = false;
-				return 0xCE9172;
+				return COLOR_STRING;
 			}
 			quate = true;
 		}
 		if(quate) {
-			return 0xCE9172;
+			return COLOR_STRING;
 		}
 		if(text.length() == 0) {
 			return 0;
@@ -61,7 +61,7 @@ public class IDELanguageJavaScript implements IDELanguageHighlight {
 			case "throw":
 			case "try":
 			case "for":
-				color = 0xC582BA;
+				color = COLOR_STATEMENT;
 				break;
 			case "this":
 			case "var":
@@ -76,22 +76,22 @@ public class IDELanguageJavaScript implements IDELanguageHighlight {
 			case "false":
 			case "void":
 			case "new":
-				color = 0x569CD6;
+				color = COLOR_KEYWORD;
 				break;
 			default:
-				color = 0xD4D4C8;
+				color = COLOR_DEFAULT;
 		}
 		if(lastToken.equals("function")) {
-			color = 0xDCDCAA;
+			color = COLOR_FUNCTION;
 		}
 		if(lastToken.equals("new")) {
-			color = 0x49C3A6;
+			color = COLOR_TYPE;
 		}
 		if(isNumeric(text)) {
-			color =  0xB5C378;
+			color =  COLOR_NUMBER;
 		}
-		if(color == 0xD4D4C8 && Character.isAlphabetic(text.charAt(0))) {
-			color = 0x9CDCFE;
+		if(color == COLOR_DEFAULT && Character.isAlphabetic(text.charAt(0))) {
+			color = COLOR_VARIABLE;
 		}
 		if(!text.trim().isEmpty()) lastToken = text;
 		return color;
@@ -99,6 +99,11 @@ public class IDELanguageJavaScript implements IDELanguageHighlight {
 	
 	public boolean isNumeric(String s) {  
 	    return s != null && s.matches("[-+]?\\d*\\.?\\d+");  
+	}
+
+	@Override
+	public void reset() {
+		quate = false;
 	}
 	
 }

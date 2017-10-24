@@ -13,6 +13,7 @@ function OpenGL(x, y, width, height) {
 	this.color4f = function(r, g, b, a) { return glcontext.color4f(r, g, b, a); }
 	this.color3f = function(r, g, b) { return glcontext.color3f(r, g, b); }
 	this.texCoord2f = function(u, v) { return glcontext.texCoord2f(u, v); }
+	this.vertex2f = function(x, y) { return glcontext.vertex2f(x, y); }
 	this.vertex3f = function(x, y, z) { return glcontext.vertex3f(x, y, z); }
 	this.matrixMode = function(mode) { return glcontext.matrixMode(mode); }
 	this.loadIdentity = function() { return glcontext.loadIdentity(); }
@@ -21,9 +22,10 @@ function OpenGL(x, y, width, height) {
 	this.rotatef = function(angle, x, y, z) { return glcontext.rotatef(angle, x, y, z); }
 	this.perspective = function(fovy, aspect, near, far) { return glcontext.getString(fovy, aspect, near, far); }
 	this.lookAt = function(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ) { return glcontext.lookAt(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ); }
-	this.genTextures = function() { return glcontext.genTextures(); }
-	this.bindTexture = function(target, id) { return glcontext.bindTexture(target, id); }
-	this.texImage2D = function(target, width, height, type, data) { return runtime.gl_texImage2D(this.handle, target, width, height, type, data); }
+	// texture support will be added soon...
+//	this.genTextures = function() { return glcontext.genTextures(); }
+//	this.bindTexture = function(target, id) { return glcontext.bindTexture(target, id); }
+//	 this.texImage2D = function(target, width, height, type, data) { return runtime.gl_texImage2D(this.handle, target, width, height, type, data); }
 }
 
 var GL = {
