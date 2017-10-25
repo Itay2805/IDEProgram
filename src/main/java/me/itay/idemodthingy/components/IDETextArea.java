@@ -32,12 +32,21 @@ public class IDETextArea extends Component {
 	private int from = 0;
 	private int lineCount;
 	
+	private List<ErrorHighlight> errors = new ArrayList<>();
+	private int errorLength;
+	
 	private boolean editable = true;
 	
 	private int backgroundColour = Color.DARK_GRAY.getRGB();
 	private int borderColour = Color.BLACK.getRGB();
 	private IDELanguageHighlight language;
 	private FontRenderer font;
+	
+	public class ErrorHighlight {
+		private int color = Color.RED.getRGB();
+		private int line = 0, column = 0, length = 5;
+		private String error = "This is a test";
+	}
 	
 	public IDETextArea(int left, int top, int width, int height, IDELanguageHighlight language) {
 		super(left, top);
@@ -50,6 +59,9 @@ public class IDETextArea extends Component {
 		font = Minecraft.getMinecraft().fontRendererObj;
 		
 		lineCount = height / font.FONT_HEIGHT;
+		
+		errors.add(new ErrorHighlight());
+		errorLength = Minecraft.getMinecraft().fontRendererObj.getStringWidth("~");
 	}
 	
 	@Override
@@ -83,6 +95,13 @@ public class IDETextArea extends Component {
 				currentX += font.getStringWidth(word);
 			}
 			currentY += font.FONT_HEIGHT;
+		}
+		
+		for(ErrorHighlight err : errors) {
+			int toX = err.column;
+			if(toX > getCurrentLine().length()) {
+				
+			}
 		}
 		
 		if(editable) {			
