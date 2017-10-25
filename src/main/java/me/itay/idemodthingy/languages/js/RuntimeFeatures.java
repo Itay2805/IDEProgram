@@ -12,27 +12,28 @@ import com.mrcrayfish.device.api.app.component.TextArea;
 import com.mrcrayfish.device.api.app.component.TextField;
 import com.mrcrayfish.device.api.app.listener.ClickListener;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import me.itay.idemodthingy.components.GLCanvas;
+import me.itay.idemodthingy.programs.IDE.ProjectFile;
 import me.itay.idemodthingy.programs.Runner;
-import scala.annotation.meta.field;
-import scala.collection.immutable.RedBlackTree.Tree;
-import scala.util.control.Exception;
 
 public class RuntimeFeatures {
 	
 	private PrintStream out;
 	private Application application;
-	private TreeMap<String, String> files;
+	private TreeMap<String, ProjectFile> files;
 	
-	public RuntimeFeatures(Application application, PrintStream out, TreeMap<String, String> files) {
+	public RuntimeFeatures(Application application, PrintStream out, TreeMap<String, ProjectFile> files) {
 		this.out = out;
 		this.application = application;
 		this.files = files;
 	}
 
 	public String getJSFile(String file) {
-		return files.get(file);
+		ProjectFile f = files.get(file);
+		if(f.support.getRuntime() instanceof IDELanguageRuntimeJS) {
+			return f.code;
+		}
+		return null;
 	}
 	
 	public void print(Object output) {

@@ -24,9 +24,11 @@ import com.mrcrayfish.device.api.io.File;
 import me.itay.idemodthingy.api.IDELanguageManager;
 import me.itay.idemodthingy.api.IDELanguageSupport;
 import me.itay.idemodthingy.components.IDETextArea;
+import me.itay.idemodthingy.languages.text.IDELanguageText;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
+import net.minecraftforge.common.util.Constants.NBT;
 
 public class IDE extends Application {
 
@@ -38,9 +40,8 @@ public class IDE extends Application {
 	private ItemList<String> filesList;
 	private IDETextArea text;
 	
-	private IDELanguageSupport support;
-	
-	private TreeMap<String, String> files;
+	private TreeMap<String, ProjectFile> files;
+	private File saveTo;
 	
 	private static final int WIDTH 	= 360;
 	private static final int HEIGHT 	= 160;
@@ -48,10 +49,54 @@ public class IDE extends Application {
 	private static final int BOUNDS_SIZE = 5;
 	private static final int BUTTONS_HEIGHT = 15;
 	
-	private String currentFile = null;
+	private ProjectFile currentFile = null;
+	
+	public class ProjectFile {
+		public String fileName;
+		public String code;
+		public IDELanguageSupport support;
+		
+		public ProjectFile(String fileName, String code, IDELanguageSupport support) {
+			this.fileName = fileName;
+			this.code = code;
+			this.support = support;
+		}
+
+		@Override
+		public String toString() {
+			return "ProjectFile [fileName=" + fileName + ", code=" + code + ", support=" + support + "]";
+		}
+	}
+	
+	private void loadProject(File file) {
+		saveTo = file;
+		
+		NBTTagCompound data = file.getData();
+		
+		NBTTagList list = data.getTagList("files", NBT.TAG_COMPOUND);
+		for(int i = 0; i < list.tagCount(); i++) {
+			NBTTagCompound comp = list.getCompoundTagAt(i);
+			String lang = comp.getString("lang");
+			String code = comp.getString("code");
+			String name = comp.getString("name");
+			
+			ProjectFile pfile = new ProjectFile(name, code, IDELanguageManager.getSupport().get(lang));
+			files.put(name, pfile);
+			filesList.addItem(name);
+		}
+	}
+	
+	private void setCurrentFile(ProjectFile file) {
+		currentFile = file;
+		text.setLanguage(file.support.getHighlight());
+		text.setText(file.code);
+		text.setEditable(true);
+	}
 	
 	@Override
 	public void init() {
+		saveTo = null;
+		
 		setDefaultWidth(360);
 		setDefaultHeight(160);
 		
@@ -68,7 +113,7 @@ public class IDE extends Application {
 		System.out.println(Arrays.toString(languages));
 		language = new List<>(BOUNDS_SIZE, BOUNDS_SIZE, 80, languages);
 		
-		support = IDELanguageManager.getSupport().get(language.getSelectedItem());
+//		support = IDELanguageManager.getSupport().get(language.getSelectedItem());
 		
 		run = new Button("Run", 80 + BOUNDS_SIZE * 2, BOUNDS_SIZE, 30, BUTTONS_HEIGHT);
 		newFile = new Button("New", (80 + 30) + BOUNDS_SIZE * 3, BOUNDS_SIZE, 30, BUTTONS_HEIGHT);
@@ -77,7 +122,7 @@ public class IDE extends Application {
 		load = new Button("Load", (80 + 120) + BOUNDS_SIZE * 4, BOUNDS_SIZE, 30, BUTTONS_HEIGHT);
 		
 		filesList = new ItemList<>(BOUNDS_SIZE, BOUNDS_SIZE * 2 + BUTTONS_HEIGHT, 80, ((HEIGHT - (BOUNDS_SIZE * 3 + BUTTONS_HEIGHT)) / 15) + 1);
-		text = new IDETextArea(80 + 2 * BOUNDS_SIZE, BOUNDS_SIZE * 2 + BUTTONS_HEIGHT, WIDTH - (BOUNDS_SIZE * 3 + 80), HEIGHT - (BOUNDS_SIZE * 3 + BUTTONS_HEIGHT), support.getHighlight());
+		text = new IDETextArea(80 + 2 * BOUNDS_SIZE, BOUNDS_SIZE * 2 + BUTTONS_HEIGHT, WIDTH - (BOUNDS_SIZE * 3 + 80), HEIGHT - (BOUNDS_SIZE * 3 + BUTTONS_HEIGHT), new IDELanguageText());
 		
 		text.setEditable(false);
 		
@@ -105,13 +150,28 @@ public class IDE extends Application {
 							curr.openDialog(msg);
 							return true;
 						}
-						files.put(e, "");
-						System.out.println("ADD: " + files);
+						ProjectFile file = new ProjectFile(e, "", IDELanguageManager.getSupport().get(language.getSelectedItem()));
+						files.put(e, file);
 						filesList.addItem(e);
+						setCurrentFile(file);
 						return true;
 					}
 				});
 				curr.openDialog(input);
+			}
+		});
+		
+		deleteFile.setClickListener(new ClickListener() {
+			@Override
+			public void onClick(Component c, int mouseButton) {
+				ProjectFile f = files.get(filesList.getSelectedItem());
+				filesList.removeItem(filesList.getSelectedIndex());
+				if(f == currentFile) {
+					text.setText("");
+					text.setEditable(false);
+				}
+				files.remove(f.fileName);
+				currentFile = null;
 			}
 		});
 		
@@ -120,14 +180,9 @@ public class IDE extends Application {
 			public void onClick(String e, int index, int mouseButton) {
 				if(currentFile != null) {
 					String oldCode = text.getText();
-					files.replace(currentFile, oldCode);
-					System.out.println("FL1: " + files);
+					currentFile.code = oldCode;
 				}
-				String code = files.get(filesList.getSelectedItem());
-				System.out.println("FL2: " + files);
-				text.setText(code);
-				text.setEditable(true);
-				currentFile = filesList.getSelectedItem();
+				setCurrentFile(files.get(filesList.getSelectedItem()));
 			}
 		});
 		
@@ -136,16 +191,16 @@ public class IDE extends Application {
 			public void onClick(Component c, int mouseButton) {
 				if(currentFile != null) {
 					String oldCode = text.getText();
-					files.replace(currentFile, oldCode);
+					currentFile.code = oldCode;
 				}
-				if(support.getRuntime() == null) {
+				if(files.firstEntry().getValue().support.getRuntime() == null) {
 					Message msg = new Message("This language has no runtime support!");
 					msg.setTitle("Error");
 					curr.openDialog(msg);
 				}else {
 					ByteArrayOutputStream baos = new ByteArrayOutputStream();
 					PrintStream stream = new PrintStream(baos);
-					String error = support.getRuntime().exe(curr, stream, files);
+					String error = files.firstEntry().getValue().support.getRuntime().exe(curr, stream, files);
 					if(error != null) {
 						Message msg = new Message(error);
 						msg.setTitle("Error");
@@ -173,8 +228,8 @@ public class IDE extends Application {
 					msg.setTitle("Error");
 					curr.openDialog(msg);
 				}else {
-					curr.support = lang;
-					text.setLanguage(curr.support.getHighlight());
+					currentFile.support = lang;
+					text.setLanguage(currentFile.support.getHighlight());
 				}				
 			}
 		});
@@ -186,8 +241,7 @@ public class IDE extends Application {
 				file.setResponseHandler(new ResponseHandler<File>() {
 					@Override
 					public boolean onResponse(boolean success, File e) {
-						NBTTagCompound data = e.getData();
-						System.out.println(data);
+						loadProject(e);
 						return true;
 					}
 				});
@@ -198,36 +252,41 @@ public class IDE extends Application {
 		save.setClickListener(new ClickListener() {
 			@Override
 			public void onClick(Component c, int mouseButton) {
-				NBTTagCompound data = new NBTTagCompound();
+				currentFile.code = text.getText();
 				
-				// save language
-				data.setString("lang", support.getName());
+				NBTTagCompound data = new NBTTagCompound();
 				
 				// save files
 				NBTTagList list = new NBTTagList();
 				for(String file : files.keySet()) {
-					NBTTagString str = new NBTTagString(files.get(file));
-					list.appendTag(str);
+					NBTTagCompound comp = new NBTTagCompound();
+					ProjectFile pfile = files.get(file);
+					comp.setString("code", pfile.code);
+					comp.setString("lang", pfile.support.getName());
+					comp.setString("name", pfile.fileName);
+					list.appendTag(comp);
 				}
-				
 				data.setTag("files", list);
 				
-				SaveFile file = new SaveFile(curr, new File("", curr, data));
-				file.setResponseHandler(new ResponseHandler<File>() {
-					@Override
-					public boolean onResponse(boolean success, File e) {
-						return success;
-					}
-				});
-				curr.openDialog(file);
+				if(saveTo != null) {
+					saveTo.setData(data);
+				}else {
+					SaveFile file = new SaveFile(curr, new File("", curr, data));
+					file.setResponseHandler(new ResponseHandler<File>() {
+						@Override
+						public boolean onResponse(boolean success, File e) {
+							return true;
+						}
+					});
+					curr.openDialog(file);
+				}
 			}
 		});
 	}
 	
 	@Override
 	public boolean handleFile(File file) {
-		NBTTagCompound data = file.getData();
-		System.out.println(data);
+		loadProject(file);
 		return true;
 	}
 	

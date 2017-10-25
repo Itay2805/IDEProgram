@@ -13,6 +13,7 @@ import javax.script.ScriptException;
 import com.mrcrayfish.device.api.app.Application;
 
 import me.itay.idemodthingy.api.IDELanguageRuntime;
+import me.itay.idemodthingy.programs.IDE.ProjectFile;
 
 public class IDELanguageRuntimeJS implements IDELanguageRuntime {
 	
@@ -33,14 +34,14 @@ public class IDELanguageRuntimeJS implements IDELanguageRuntime {
 	}
 	
 	@Override
-	public String exe(Application app, PrintStream out, TreeMap<String, String> files) {
+	public String exe(Application app, PrintStream out, TreeMap<String, ProjectFile> files) {
 		ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 		try {
 			engine.put("runtime", new RuntimeFeatures(app, out, files));
 			engine.eval(bootstrap);
 			engine.eval(opengl);
 			System.out.println(files.firstEntry());
-			if(!files.isEmpty()) engine.eval(files.firstEntry().getValue());
+			if(!files.isEmpty()) engine.eval(files.firstEntry().getValue().code);
 			return null;
 		} catch (Throwable e) {
 			return e.getMessage().replaceAll("", "");
