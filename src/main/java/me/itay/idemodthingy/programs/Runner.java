@@ -9,14 +9,10 @@ import com.mrcrayfish.device.api.app.Component;
 import com.mrcrayfish.device.api.app.Dialog.Message;
 import com.mrcrayfish.device.api.app.Dialog.OpenFile;
 import com.mrcrayfish.device.api.app.Dialog.ResponseHandler;
-import com.mrcrayfish.device.api.app.component.Button;
-import com.mrcrayfish.device.api.app.component.Label;
-import com.mrcrayfish.device.api.app.component.TextArea;
 import com.mrcrayfish.device.api.io.File;
 import com.mrcrayfish.device.core.Laptop;
 
 import me.itay.idemodthingy.api.IDELanguageManager;
-import me.itay.idemodthingy.api.IDELanguageSupport;
 import me.itay.idemodthingy.programs.IDE.ProjectFile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
@@ -26,13 +22,10 @@ import net.minecraftforge.common.util.Constants.NBT;
 public class Runner extends Application {
 	
 	private TreeMap<String, ProjectFile> files;
-	private IDELanguageSupport support;
 	private Runnable onRender;
 	
 	@Override
 	public void init() {
-		Runner runner = this;
-		
 		files = new TreeMap<>();
 		
 		Runner curr = this;

@@ -1,10 +1,6 @@
 package me.itay.idemodthingy.api;
 
-import java.awt.Color;
-import java.util.TreeMap;
-
 import me.itay.idemodthingy.components.IDETextArea;
-import me.itay.idemodthingy.programs.IDE.ProjectFile;
 
 public interface IDELanguageHighlight {
 	

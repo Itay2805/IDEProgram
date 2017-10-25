@@ -12,7 +12,6 @@ import com.mrcrayfish.device.api.utils.RenderUtil;
 import com.mrcrayfish.device.core.Laptop;
 
 import me.itay.idemodthingy.api.IDELanguageHighlight;
-import me.itay.idemodthingy.programs.Draw;
 import me.itay.idemodthingy.util.Timer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -128,10 +127,9 @@ public class IDETextArea extends Component {
 			lastY = cursorY;
 		}
 		
-		Draw draw = new Draw();
 		for(ErrorHighlight err : errors) {
 			int X = font.getStringWidth(getCurrentLine().substring(0, err.column));
-			int Y = (this.cursorY - from) * font.FONT_HEIGHT + font.FONT_HEIGHT;
+			int Y = (err.line - from) * font.FONT_HEIGHT + font.FONT_HEIGHT;
 			String finale = "";
 			int length = font.getStringWidth(getCurrentLine().substring(err.column, err.column + err.length));
 			for(int i = 0; i <= (length / errorLength); i++) {
@@ -163,7 +161,6 @@ public class IDETextArea extends Component {
 			return;
 		}
 		
-		int index = cursorX + cursorY * (width / font.getCharWidth('_'));
 		switch(code)  {
 			case Keyboard.KEY_BACK:
 				if(cursorY == 0 && cursorX == 0) break;

@@ -3,7 +3,6 @@ package me.itay.idemodthingy.programs;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.TreeMap;
 
 import com.mrcrayfish.device.api.app.Application;
@@ -27,7 +26,6 @@ import me.itay.idemodthingy.components.IDETextArea;
 import me.itay.idemodthingy.languages.text.IDELanguageText;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
 import net.minecraftforge.common.util.Constants.NBT;
 
 public class IDE extends Application {

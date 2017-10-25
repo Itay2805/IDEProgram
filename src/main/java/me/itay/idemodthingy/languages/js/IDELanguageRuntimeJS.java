@@ -1,14 +1,11 @@
 package me.itay.idemodthingy.languages.js;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.TreeMap;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 import com.mrcrayfish.device.api.app.Application;
 
