@@ -8,9 +8,12 @@ import java.util.StringJoiner;
 import org.lwjgl.input.Keyboard;
 
 import com.mrcrayfish.device.api.app.Component;
+import com.mrcrayfish.device.api.utils.RenderUtil;
 import com.mrcrayfish.device.core.Laptop;
 
 import me.itay.idemodthingy.api.IDELanguageHighlight;
+import me.itay.idemodthingy.programs.Draw;
+import me.itay.idemodthingy.util.Timer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
@@ -31,6 +34,7 @@ public class IDETextArea extends Component {
 	private int lastY = 0;
 	private int from = 0;
 	private int lineCount;
+	private Timer timer;
 	
 	private List<ErrorHighlight> errors = new ArrayList<>();
 	private int errorLength;
@@ -44,12 +48,14 @@ public class IDETextArea extends Component {
 	
 	public class ErrorHighlight {
 		private int color = Color.RED.getRGB();
-		private int line = 0, column = 0, length = 5;
-		private String error = "This is a test";
+		private int line = 0, column = 0, length = 0;
+		private String error = "Error";
 	}
 	
 	public IDETextArea(int left, int top, int width, int height, IDELanguageHighlight language) {
 		super(left, top);
+		timer = new Timer();
+		
 		this.width = width;
 		this.height = height;
 		this.language = language;
@@ -60,12 +66,23 @@ public class IDETextArea extends Component {
 		
 		lineCount = height / font.FONT_HEIGHT;
 		
-		errors.add(new ErrorHighlight());
 		errorLength = Minecraft.getMinecraft().fontRendererObj.getStringWidth("~");
+	}
+	
+	public void addError(ErrorHighlight highlight) {
+		errors.add(highlight);
+	}
+	
+	public void clearErrors() {
+		errors.clear();
 	}
 	
 	@Override
 	public void handleTick() {
+		if(timer.elapsed() >= 0.5) {
+			timer.reset();
+			language.errorCheck(this, getText());
+		}
 		updateCounter++;
 	}
 	
@@ -97,14 +114,7 @@ public class IDETextArea extends Component {
 			currentY += font.FONT_HEIGHT;
 		}
 		
-		for(ErrorHighlight err : errors) {
-			int toX = err.column;
-			if(toX > getCurrentLine().length()) {
-				
-			}
-		}
-		
-		if(editable) {			
+		if(editable) {
 			if(updateCounter / 2 % 6 == 0 || lastX != cursorX || lastY != cursorY) {
 				int toX = this.cursorX;
 				if(toX > getCurrentLine().length()) {
@@ -116,6 +126,23 @@ public class IDETextArea extends Component {
 			}
 			lastX = cursorX;
 			lastY = cursorY;
+		}
+		
+		Draw draw = new Draw();
+		for(ErrorHighlight err : errors) {
+			int X = font.getStringWidth(getCurrentLine().substring(0, err.column));
+			int Y = (this.cursorY - from) * font.FONT_HEIGHT + font.FONT_HEIGHT;
+			String finale = "";
+			int length = font.getStringWidth(getCurrentLine().substring(err.column, err.column + err.length));
+			for(int i = 0; i <= (length / errorLength); i++) {
+				finale += "~";
+			}
+			font.drawSplitString(finale, xPosition + PADDING + 1 + X, yPosition + PADDING + 2 + Y, width - PADDING * 2 - 2, err.color);
+			if(RenderUtil.isMouseInside(mouseX - xPosition, mouseY - yPosition, X, Y - font.FONT_HEIGHT / 2, X + length, Y + font.FONT_HEIGHT / 2)) {
+				Gui.drawRect(mouseX, mouseY - (font.FONT_HEIGHT + 4), mouseX + font.getStringWidth(err.error) + 4, mouseY, borderColour);
+				Gui.drawRect(mouseX + 1, mouseY - (font.FONT_HEIGHT + 4) + 1, mouseX + font.getStringWidth(err.error) + 4 - 1, mouseY - 1, backgroundColour);
+				font.drawString(err.error, mouseX + 2, mouseY - (font.FONT_HEIGHT + 4) + 2, Color.WHITE.getRGB(), true);
+			}
 		}
 		
 		language.reset();

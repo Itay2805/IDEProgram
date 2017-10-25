@@ -1,8 +1,11 @@
 package me.itay.idemodthingy.languages.text;
 
 import java.awt.Color;
+import java.util.TreeMap;
 
 import me.itay.idemodthingy.api.IDELanguageHighlight;
+import me.itay.idemodthingy.components.IDETextArea;
+import me.itay.idemodthingy.programs.IDE.ProjectFile;
 
 public class IDELanguageText implements IDELanguageHighlight {
 
@@ -18,6 +21,11 @@ public class IDELanguageText implements IDELanguageHighlight {
 
 	@Override
 	public void reset() {
+		
+	}
+
+	@Override
+	public void errorCheck(IDETextArea area, String code) {
 		
 	}
 	

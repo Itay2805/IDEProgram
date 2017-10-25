@@ -244,7 +244,7 @@ public class GLContext {
 				Vector3f normal = new Vector3f();
 				side1.cross(side2, normal);
 				float dot = normal.dot(beginVertices.get(i).coord);
-				vertex.render = dot <= 0; // If dot > 0, then the face is facing away from the camera
+				vertex.cull = dot <= 0; // If dot > 0, then the face is facing away from the camera
 			}
 			
 			// Transform vertex into clip space
@@ -265,7 +265,9 @@ public class GLContext {
 		
 		// Assemble primitives
 		if(beginMode == POINTS) {
-			
+			for(int i = 0; i < this.beginVertices.size(); i++) {				
+				drawPoint(beginVertices.get(i), this.bufColor, this.bufDepth, this);
+			}
 		}else if(beginMode == LINES && beginVertices.size() >= 2) {
 			
 		}else if(beginMode == TRIANGLES && beginVertices.size() >= 3) {
@@ -583,8 +585,45 @@ public class GLContext {
 		}
 	}
 	
+	private static void drawPoint(Vertex p, Vector4f[] color, float[] depth, GLContext gl) {
+		int o = (int) (Math.floor(p.coord.x) + Math.floor(p.coord.y) * gl.w);
+		
+		if(gl.depthEnabled) {
+			float d = p.coord.z;
+			if(d > depth[o]) return;
+			else depth[o] = d;
+		}
+		
+		// Vertex color
+		Vector4f fragColor = new Vector4f();
+		fragColor.x = p.color.x;
+		fragColor.y = p.color.y;
+		fragColor.z = p.color.z;
+		fragColor.w = p.color.w;
+		
+		// Texture sample
+		Texture tex = gl.textures.get(gl.curTexture);
+		if(gl.textureEnabled && tex != null) {
+			float u = p.texCoord.x;
+			float v = p.texCoord.y;
+			u = (float) (Math.floor(u * tex.w) % tex.w);
+			v = (float) (Math.floor(v * tex.h) % tex.h);
+			
+			int to = (int) (u + v * tex.w);
+			fragColor.x *= tex.pixels[to].x;
+			fragColor.y *= tex.pixels[to].y;
+			fragColor.z *= tex.pixels[to].z;
+			fragColor.w *= tex.pixels[to].w;
+		}
+		
+		color[o].x = fragColor.x;
+		color[o].y = fragColor.y;
+		color[o].z = fragColor.z;
+		color[o].w = fragColor.w;
+	}
+	
 	public static void drawTriangle(Vertex[] p, Vector4f[] color, float[] depth, GLContext gl) {
-		if(gl.cullingEnabled && !p[0].render) return;
+		if(gl.cullingEnabled && !p[0].cull) return;
 		
 		int x1 = (int)Math.floor(p[0].coord.x);
 		int x2 = (int)Math.floor(p[1].coord.x);
@@ -623,15 +662,10 @@ public class GLContext {
 				
 				// Vertex color
 				Vector4f fragColor = new Vector4f();
-//				fragColor.x = ( ic0*p[0].color.x/p[0].coord.z + ic1*p[1].color.x/p[1].coord.z + ic2*p[2].color.x/p[2].coord.z ) * z;
-//				fragColor.y = ( ic0*p[0].color.y/p[0].coord.z + ic1*p[1].color.y/p[1].coord.z + ic2*p[2].color.y/p[2].coord.z ) * z;
-//				fragColor.z = ( ic0*p[0].color.z/p[0].coord.z + ic1*p[1].color.z/p[1].coord.z + ic2*p[2].color.z/p[2].coord.z ) * z;
-//				fragColor.w = ( ic0*p[0].color.w/p[0].coord.z + ic1*p[1].color.w/p[1].coord.z + ic2*p[2].color.w/p[2].coord.z ) * z;
-				fragColor.x = ( ic0*p[0].color.x + ic1*p[1].color.x + ic2*p[2].color.x );
-				fragColor.y = ( ic0*p[0].color.y + ic1*p[1].color.y + ic2*p[2].color.y );
-				fragColor.z = ( ic0*p[0].color.z + ic1*p[1].color.z + ic2*p[2].color.z );
-				fragColor.w = ( ic0*p[0].color.w + ic1*p[1].color.w + ic2*p[2].color.w );
-				
+				fragColor.x = ( ic0*p[0].color.x/p[0].coord.z + ic1*p[1].color.x/p[1].coord.z + ic2*p[2].color.x/p[2].coord.z ) * z;
+				fragColor.y = ( ic0*p[0].color.y/p[0].coord.z + ic1*p[1].color.y/p[1].coord.z + ic2*p[2].color.y/p[2].coord.z ) * z;
+				fragColor.z = ( ic0*p[0].color.z/p[0].coord.z + ic1*p[1].color.z/p[1].coord.z + ic2*p[2].color.z/p[2].coord.z ) * z;
+				fragColor.w = ( ic0*p[0].color.w/p[0].coord.z + ic1*p[1].color.w/p[1].coord.z + ic2*p[2].color.w/p[2].coord.z ) * z;
 				
 				// Texture sample
 				if(gl.textureEnabled && gl.curTexture < gl.textures.size()) {
@@ -655,8 +689,8 @@ public class GLContext {
 	
 	private static void drawQuad(Vertex[] p, Vector4f[] color, float[] depth, GLContext gl) {
 		if(gl.cullingEnabled) {
-			if(!p[0].render) return;
-			p[2].render = true; // Or drawTriangle will think the second triangle making the quad is culled
+			if(!p[0].cull) return;
+			p[2].cull = true; // Or drawTriangle will think the second triangle making the quad is culled
 		}
 		
 		drawTriangle(new Vertex[] { p[0], p[1], p[2] }, color, depth, gl);

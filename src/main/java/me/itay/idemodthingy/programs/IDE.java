@@ -51,7 +51,7 @@ public class IDE extends Application {
 	
 	private ProjectFile currentFile = null;
 	
-	public class ProjectFile {
+	public static class ProjectFile {
 		public String fileName;
 		public String code;
 		public IDELanguageSupport support;
@@ -91,6 +91,7 @@ public class IDE extends Application {
 		text.setLanguage(file.support.getHighlight());
 		text.setText(file.code);
 		text.setEditable(true);
+		language.setEnabled(true);
 	}
 	
 	@Override
@@ -112,8 +113,8 @@ public class IDE extends Application {
 		}
 		System.out.println(Arrays.toString(languages));
 		language = new List<>(BOUNDS_SIZE, BOUNDS_SIZE, 80, languages);
-		
-//		support = IDELanguageManager.getSupport().get(language.getSelectedItem());
+
+//				support = IDELanguageManager.getSupport().get(language.getSelectedItem());
 		
 		run = new Button("Run", 80 + BOUNDS_SIZE * 2, BOUNDS_SIZE, 30, BUTTONS_HEIGHT);
 		newFile = new Button("New", (80 + 30) + BOUNDS_SIZE * 3, BOUNDS_SIZE, 30, BUTTONS_HEIGHT);

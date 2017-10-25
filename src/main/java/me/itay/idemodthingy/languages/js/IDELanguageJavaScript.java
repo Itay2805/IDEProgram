@@ -2,8 +2,11 @@ package me.itay.idemodthingy.languages.js;
 
 import java.awt.Color;
 import java.util.StringJoiner;
+import java.util.TreeMap;
 
 import me.itay.idemodthingy.api.IDELanguageHighlight;
+import me.itay.idemodthingy.components.IDETextArea;
+import me.itay.idemodthingy.programs.IDE.ProjectFile;
 
 public class IDELanguageJavaScript implements IDELanguageHighlight {
 
@@ -104,6 +107,11 @@ public class IDELanguageJavaScript implements IDELanguageHighlight {
 	@Override
 	public void reset() {
 		quate = false;
+	}
+
+	@Override
+	public void errorCheck(IDETextArea area, String code) {
+		
 	}
 	
 }

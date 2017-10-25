@@ -2,6 +2,7 @@ package me.itay.idemodthingy.programs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.TreeMap;
 
 import com.mrcrayfish.device.api.app.Application;
 import com.mrcrayfish.device.api.app.Component;
@@ -16,12 +17,15 @@ import com.mrcrayfish.device.core.Laptop;
 
 import me.itay.idemodthingy.api.IDELanguageManager;
 import me.itay.idemodthingy.api.IDELanguageSupport;
+import me.itay.idemodthingy.programs.IDE.ProjectFile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.common.util.Constants.NBT;
 
 public class Runner extends Application {
 	
-	private String code;
+	private TreeMap<String, ProjectFile> files;
 	private IDELanguageSupport support;
 	private Runnable onRender;
 	
@@ -29,12 +33,42 @@ public class Runner extends Application {
 	public void init() {
 		Runner runner = this;
 		
+		files = new TreeMap<>();
+		
+		Runner curr = this;
+		
 		OpenFile file = new OpenFile(this);
 		file.setResponseHandler(new ResponseHandler<File>() {
 			@Override
 			public boolean onResponse(boolean success, File e) {
 				NBTTagCompound data = e.getData();
-				System.out.println(data);
+				
+				NBTTagList list = data.getTagList("files", NBT.TAG_COMPOUND);
+				for(int i = 0; i < list.tagCount(); i++) {
+					NBTTagCompound comp = list.getCompoundTagAt(i);
+					String lang = comp.getString("lang");
+					String code = comp.getString("code");
+					String name = comp.getString("name");
+					
+					ProjectFile pfile = new ProjectFile(name, code, IDELanguageManager.getSupport().get(lang));
+					files.put(name, pfile);
+				}
+				
+				if(files.firstEntry().getValue().support.getRuntime() == null) {
+					Message msg = new Message("This language has no runtime support!");
+					msg.setTitle("Error");
+					curr.openDialog(msg);
+				}else {
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					PrintStream stream = new PrintStream(baos);
+					String error = files.firstEntry().getValue().support.getRuntime().exe(curr, stream, files);
+					if(error != null) {
+						Message msg = new Message(error);
+						msg.setTitle("Error");
+						curr.openDialog(msg);
+					}
+				}
+				
 				return true;
 			}
 		});

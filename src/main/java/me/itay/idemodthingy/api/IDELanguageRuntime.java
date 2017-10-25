@@ -11,6 +11,14 @@ import me.itay.idemodthingy.programs.IDE.ProjectFile;
 
 public interface IDELanguageRuntime {
 	
+	/**
+	 * execute the code
+	 * 
+	 * @param app the Application that runs the code
+	 * @param out the output stream
+	 * @param files the files in the project
+	 * @return error if any
+	 */
 	public String exe(Application app, PrintStream out, TreeMap<String, ProjectFile> files);
 	
 }

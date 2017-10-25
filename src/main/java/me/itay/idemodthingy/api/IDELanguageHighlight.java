@@ -1,6 +1,10 @@
 package me.itay.idemodthingy.api;
 
 import java.awt.Color;
+import java.util.TreeMap;
+
+import me.itay.idemodthingy.components.IDETextArea;
+import me.itay.idemodthingy.programs.IDE.ProjectFile;
 
 public interface IDELanguageHighlight {
 	
@@ -13,8 +17,33 @@ public interface IDELanguageHighlight {
 	public static final int COLOR_DEFAULT = 0xD4D4C8;
 	public static final int COLOR_STRING = 0xCE9172;
 
+	/**
+	 * Called after tokenized a got keyword color for every displayed line
+	 */
 	public void reset();
+	
+	/**
+	 * tokenize the line into tokens
+	 * 
+	 * @param text
+	 * @return
+	 */
 	public String[] tokenize(String text);
+	
+	/**
+	 * 
+	 * get the keyword color for the token
+	 * 
+	 * @param text
+	 * @return
+	 */
 	public int getKeywordColor(String text);
+	
+	/**
+	 * 
+	 * check for error in a file
+	 * 
+	 */
+	public void errorCheck(IDETextArea area, String code);
 	
 }
