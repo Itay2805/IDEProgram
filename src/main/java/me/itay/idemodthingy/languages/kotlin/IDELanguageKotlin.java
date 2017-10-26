@@ -27,27 +27,27 @@ public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlig
         DELIMITER = joiner.toString();
     }
 
-    //TODO: Do not execute kotlin, even though it will be disabled. Don't do anything with it! Will get this working!
     @Override
     public String exe(Application app, PrintStream out, TreeMap<String, IDE.ProjectFile> code) {
         try{
-            ResourceLocation kotlindirresloc = new ResourceLocation(IDEModProgramThingy.MODID, "kotlin");
-            ResourceLocation kotlinbinresloc = new ResourceLocation(IDEModProgramThingy.MODID, "kotlin/libexec/bin/");
+            /*ResourceLocation kotlindirresloc = new ResourceLocation(IDEModProgramThingy.MODID, "kotlin");
+            ResourceLocation kotlinbinresloc = new ResourceLocation(IDEModProgramThingy.MODID, "kotlin/libexec/bin/");*/
             ResourceLocation outresloc = new ResourceLocation(IDEModProgramThingy.MODID, "kotlin/out/");
-            File kotlindir = new File(kotlindirresloc.getResourcePath());
+            String resources = String.format("assets/%s", IDEModProgramThingy.MODID);
+            File kotlindir = new File(String.format("%s/kotlin", resources));
             File outdir = null;
-            File kotlincfile = null;
+//            File kotlincfile = null;
             File outfile = null;
+            Scanner kotlincfile = null;
             if(!kotlindir.exists()){
                 if(kotlindir.mkdir()){
-                    outdir = new File(outresloc.getResourcePath());
-                    kotlincfile = new File(String.format("%s/kotlinc-jvm", kotlinbinresloc.getResourcePath()));
+                    outdir = new File(String.format("%s/out", kotlindir));
+                    kotlincfile = new Scanner(this.getClass().getResourceAsStream(String.format("%s/libexc/bin/kotlinc-jvm", kotlindir.getAbsolutePath())));
                     outfile = new File(String.format("%s/output.jar", outresloc.getResourcePath()));
-
                 }
             }else{
-                outdir = new File(outresloc.getResourcePath());
-                kotlincfile = new File(String.format("%s/kotlinc-jvm", kotlinbinresloc.getResourcePath()));
+                outdir = new File(String.format("%s/out", kotlindir));
+                kotlincfile = new Scanner(this.getClass().getResourceAsStream(String.format("%s/libexc/bin/kotlinc-jvm", kotlindir.getAbsolutePath())));
                 outfile = new File(String.format("%s/output.jar", outresloc.getResourcePath()));
             }
             List<String> filePaths = new ArrayList<>();
@@ -70,14 +70,11 @@ public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlig
 
             List<String> commands = new ArrayList<>();
             {
-                if(kotlincfile.exists()){
-                    if(kotlincfile.isFile()){
-                        commands.add(kotlincfile.getAbsolutePath());
+                if(kotlincfile.hasNext()){
+                        commands.add(kotlincfile.next());
                         commands.addAll(filePaths);
                         commands.add("-d");
                         commands.add(outfile.getAbsolutePath());
-
-                    }
                 }
             }
             ProcessBuilder pb = new ProcessBuilder(commands);
