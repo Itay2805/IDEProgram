@@ -21,23 +21,22 @@ public class IDELanguageJavaScript implements IDELanguageHighlight {
 	
 	@Override
 	public String[] tokenize(String text) {
-		String[] tokens = text.split(String.format(WITH_DELIMITER, "(" + DELIMITER + ")"));
-		return tokens;
+		return text.split(String.format(WITH_DELIMITER, "(" + DELIMITER + ")"));
 	}
 	
 	private String lastToken = "";
-	private boolean quate = false;
+	private boolean quote = false;
 	
 	@Override
 	public int getKeywordColor(String text) {
 		if(text.contains("\"")) {
-			if(quate) {
-				quate = false;
+			if(quote) {
+				quote = false;
 				return COLOR_STRING;
 			}
-			quate = true;
+			quote = true;
 		}
-		if(quate) {
+		if(quote) {
 			return COLOR_STRING;
 		}
 		if(text.length() == 0) {
@@ -103,7 +102,7 @@ public class IDELanguageJavaScript implements IDELanguageHighlight {
 
 	@Override
 	public void reset() {
-		quate = false;
+		quote = false;
 	}
 
 	@Override

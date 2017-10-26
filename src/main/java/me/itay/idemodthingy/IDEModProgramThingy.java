@@ -10,6 +10,7 @@ import me.itay.idemodthingy.api.IDELanguageManager;
 import me.itay.idemodthingy.api.IDELanguageSupport;
 import me.itay.idemodthingy.languages.js.IDELanguageJavaScript;
 import me.itay.idemodthingy.languages.js.IDELanguageRuntimeJS;
+import me.itay.idemodthingy.languages.kotlin.IDELanguageKotlin;
 import me.itay.idemodthingy.languages.text.IDELanguageText;
 import me.itay.idemodthingy.programs.IDE;
 import me.itay.idemodthingy.programs.OpenGLTest;
@@ -18,6 +19,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+
+import java.util.List;
 
 @Mod(modid = IDEModProgramThingy.MODID, version = IDEModProgramThingy.VERSION)
 public class IDEModProgramThingy
@@ -41,6 +44,9 @@ public class IDEModProgramThingy
     	
     	IDELanguageSupport js = new IDELanguageSupport("JavaScript", new IDELanguageJavaScript(), new IDELanguageRuntimeJS());
     	IDELanguageManager.addSupport("JavaScript", js);
+
+    	IDELanguageSupport kotlin = new IDELanguageSupport("kotlin", new IDELanguageKotlin(), new IDELanguageKotlin());
+    	IDELanguageManager.addSupport("kotlin", kotlin);
 
     	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:ide"), IDE.class);
     	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:runtime"), Runner.class);

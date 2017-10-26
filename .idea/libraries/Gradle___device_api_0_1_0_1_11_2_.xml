@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: :device-api-0.1.0-1.11.2:">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/device-api-0.1.0-1.11.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

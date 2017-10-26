@@ -1,13 +1,17 @@
 buildscript {
+    ext.kotlin_version = '1.1.51'
     repositories {
         jcenter()
         maven { url = "http://files.minecraftforge.net/maven" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
+
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'kotlin'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 repositories {
@@ -47,10 +51,12 @@ task fatJar(type: Jar) {
 
 dependencies {
 
-    compile name: 'device-api-0.1.0-1.11.2'
-    compile name: 'nashorn'
     compile name: 'joml-1.9.4'
-    
+    compile name: 'device-api-0.1.0-1.11.2'
+    compile group: "org.jetbrains.kotlin", name: "kotlin-stdlib", version: kotlin_version
+    compile group: "org.jetbrains.kotlin", name: "kotlin-stdlib-jre8", version: kotlin_version
+    compile group: "org.jetbrains.kotlin", name: "kotlin-runtime", version: kotlin_version
+//    compile group: "org.jetbrains.kotlin", name: "kotlin-compiler", version: kotlin_version
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
     //compile "some.group:artifact:version:classifier"

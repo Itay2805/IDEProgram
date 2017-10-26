@@ -229,7 +229,7 @@ public class IDE extends Application {
 				}else {
 					currentFile.support = lang;
 					text.setLanguage(currentFile.support.getHighlight());
-				}				
+				}
 			}
 		});
 		
