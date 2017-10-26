@@ -2,6 +2,7 @@ package me.itay.idemodthingy.programs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.TreeMap;
 
@@ -68,6 +69,9 @@ public class IDE extends Application {
 	
 	private void loadProject(File file) {
 		saveTo = file;
+		
+		files.clear();
+		filesList.setItems(new ArrayList<>());
 		
 		NBTTagCompound data = file.getData();
 		
