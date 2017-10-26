@@ -10,6 +10,7 @@ import net.minecraft.util.ResourceLocation;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -33,21 +34,23 @@ public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlig
             /*ResourceLocation kotlindirresloc = new ResourceLocation(IDEModProgramThingy.MODID, "kotlin");
             ResourceLocation kotlinbinresloc = new ResourceLocation(IDEModProgramThingy.MODID, "kotlin/libexec/bin/");*/
             ResourceLocation outresloc = new ResourceLocation(IDEModProgramThingy.MODID, "kotlin/out/");
-            String resources = String.format("assets/%s", IDEModProgramThingy.MODID);
+            String resources = String.format("/assets/%s", IDEModProgramThingy.MODID);
             File kotlindir = new File(String.format("%s/kotlin", resources));
             File outdir = null;
 //            File kotlincfile = null;
             File outfile = null;
             Scanner kotlincfile = null;
+            System.out.println("Path:" + kotlindir.getAbsolutePath());
+            Files.createDirectories(kotlindir.toPath());
             if(!kotlindir.exists()){
-                if(kotlindir.mkdir()){
+                if(kotlindir.mkdirs()){
                     outdir = new File(String.format("%s/out", kotlindir));
-                    kotlincfile = new Scanner(this.getClass().getResourceAsStream(String.format("%s/libexc/bin/kotlinc-jvm", kotlindir.getAbsolutePath())));
+                    kotlincfile = new Scanner(this.getClass().getResourceAsStream("/assets/idemodthingy/kotlin/libexec/bin/kotlinc-jvm"));
                     outfile = new File(String.format("%s/output.jar", outresloc.getResourcePath()));
                 }
             }else{
                 outdir = new File(String.format("%s/out", kotlindir));
-                kotlincfile = new Scanner(this.getClass().getResourceAsStream(String.format("%s/libexc/bin/kotlinc-jvm", kotlindir.getAbsolutePath())));
+                kotlincfile = new Scanner(this.getClass().getResourceAsStream("/assets/idemodthingy/kotlin/libexec/bin/kotlinc-jvm"));
                 outfile = new File(String.format("%s/output.jar", outresloc.getResourcePath()));
             }
             List<String> filePaths = new ArrayList<>();
