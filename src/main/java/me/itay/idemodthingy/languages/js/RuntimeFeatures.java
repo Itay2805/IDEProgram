@@ -41,7 +41,7 @@ public class RuntimeFeatures {
 	}
 	
 	public Button createButton(String text, int x, int y, int width, int height) {
-		return new Button(text, x, y, width, height);
+		return new Button(x, y, width, height, text);
 	}
 	
 	public GLCanvas createGLCanvas(int x, int y, int width, int height) {

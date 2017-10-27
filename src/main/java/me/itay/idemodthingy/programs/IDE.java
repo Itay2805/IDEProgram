@@ -114,11 +114,11 @@ public class IDE extends Application {
 
 //				support = IDELanguageManager.getSupport().get(language.getSelectedItem());
 		
-		run = new Button("Run", 80 + BOUNDS_SIZE * 2, BOUNDS_SIZE, 30, BUTTONS_HEIGHT);
-		newFile = new Button("New", (80 + 30) + BOUNDS_SIZE * 3, BOUNDS_SIZE, 30, BUTTONS_HEIGHT);
-		deleteFile = new Button("Del", (80 + 60) + BOUNDS_SIZE * 3, BOUNDS_SIZE, 30, BUTTONS_HEIGHT);
-		save = new Button("Save", (80 + 90) + BOUNDS_SIZE * 3, BOUNDS_SIZE, 30, BUTTONS_HEIGHT);
-		load = new Button("Load", (80 + 120) + BOUNDS_SIZE * 4, BOUNDS_SIZE, 30, BUTTONS_HEIGHT);
+		run = new Button(80 + BOUNDS_SIZE * 2, BOUNDS_SIZE, 30, BUTTONS_HEIGHT, "Run");
+		newFile = new Button((80 + 30) + BOUNDS_SIZE * 3, BOUNDS_SIZE, 30, BUTTONS_HEIGHT, "New");
+		deleteFile = new Button((80 + 60) + BOUNDS_SIZE * 3, BOUNDS_SIZE, 30, BUTTONS_HEIGHT, "Del");
+		save = new Button((80 + 90) + BOUNDS_SIZE * 3, BOUNDS_SIZE, 30, BUTTONS_HEIGHT, "Save");
+		load = new Button((80 + 120) + BOUNDS_SIZE * 4, BOUNDS_SIZE, 30, BUTTONS_HEIGHT, "Load");
 		
 		filesList = new ItemList<>(BOUNDS_SIZE, BOUNDS_SIZE * 2 + BUTTONS_HEIGHT, 80, ((HEIGHT - (BOUNDS_SIZE * 3 + BUTTONS_HEIGHT)) / 15) + 1);
 		text = new IDETextArea(80 + 2 * BOUNDS_SIZE, BOUNDS_SIZE * 2 + BUTTONS_HEIGHT, WIDTH - (BOUNDS_SIZE * 3 + 80), HEIGHT - (BOUNDS_SIZE * 3 + BUTTONS_HEIGHT), new IDELanguageText());
@@ -136,94 +136,80 @@ public class IDE extends Application {
 		
 		IDE curr = this;
 
-		newFile.setClickListener(new ClickListener() {
-			@Override
-			public void onClick(Component c, int mouseButton) {
-				Input input = new Input("File name");
-				input.setResponseHandler(new ResponseHandler<String>() {
-					@Override
-					public boolean onResponse(boolean success, String e) {
-						if(files.containsKey(e)) {
-							Message msg = new Message("This file already exists!");
-							msg.setTitle("Error");
-							curr.openDialog(msg);
-							return true;
-						}
-						ProjectFile file = new ProjectFile(e, "", IDELanguageManager.getSupport().get(language.getSelectedItem()));
-						files.put(e, file);
-						filesList.addItem(e);
-						setCurrentFile(file);
-						return true;
-					}
-				});
-				curr.openDialog(input);
-			}
+		newFile.setClickListener((c, mouseButton)-> {
+			Input input = new Input("File name");
+			input.setResponseHandler((success, e)->{
+				if(files.containsKey(e)) {
+					Message msg = new Message("This file already exists!");
+					msg.setTitle("Error");
+					curr.openDialog(msg);
+					return true;
+				}
+				ProjectFile file = new ProjectFile(e, "", IDELanguageManager.getSupport().get(language.getSelectedItem()));
+				files.put(e, file);
+				filesList.addItem(e);
+				setCurrentFile(file);
+				return true;
+			});
+			curr.openDialog(input);
 		});
 		
-		deleteFile.setClickListener(new ClickListener() {
-			@Override
-			public void onClick(Component c, int mouseButton) {
-				ProjectFile f = files.get(filesList.getSelectedItem());
-				filesList.removeItem(filesList.getSelectedIndex());
-				if(f == currentFile) {
-					text.setText("");
-					text.setEditable(false);
-				}
-				files.remove(f.fileName);
-				currentFile = null;
+		deleteFile.setClickListener((c, mouseButton)-> {
+			ProjectFile f = files.get(filesList.getSelectedItem());
+			filesList.removeItem(filesList.getSelectedIndex());
+			if(f == currentFile) {
+				text.setText("");
+				text.setEditable(false);
 			}
+			files.remove(f.fileName);
+			currentFile = null;
 		});
 		
-		filesList.setItemClickListener(new ItemClickListener<String>() {
-			@Override
-			public void onClick(String e, int index, int mouseButton) {
-				if(currentFile != null) {
-					String oldCode = text.getText();
-					currentFile.code = oldCode;
-				}
-				setCurrentFile(files.get(filesList.getSelectedItem()));
+		filesList.setItemClickListener((e, index, mouseButton)-> {
+			if(currentFile != null) {
+				currentFile.code = text.getText();
 			}
+			setCurrentFile(files.get(filesList.getSelectedItem()));
 		});
 		
-		run.setClickListener(new ClickListener() {
-			@Override
-			public void onClick(Component c, int mouseButton) {
-				if(currentFile != null) {
-					String oldCode = text.getText();
-					currentFile.code = oldCode;
-				}
-				if(files.firstEntry().getValue().support.getRuntime() == null) {
-					Message msg = new Message("This language has no runtime support!");
+		run.setClickListener((c, mouseButton)->{
+			if(currentFile != null) {
+				currentFile.code = text.getText();
+			}
+			if(files.firstEntry().getValue().support.getRuntime() == null) {
+				Message msg = new Message("This language has no runtime support!");
+				msg.setTitle("Error");
+				curr.openDialog(msg);
+			}else {
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				PrintStream stream = new PrintStream(baos);
+				String error = files.firstEntry().getValue().support.getRuntime().exe(curr, stream, files);
+				if(error != null) {
+					Message msg = new Message(error);
 					msg.setTitle("Error");
 					curr.openDialog(msg);
 				}else {
-					ByteArrayOutputStream baos = new ByteArrayOutputStream();
-					PrintStream stream = new PrintStream(baos);
-					String error = files.firstEntry().getValue().support.getRuntime().exe(curr, stream, files);
-					if(error != null) {
-						Message msg = new Message(error);
-						msg.setTitle("Error");
-						curr.openDialog(msg);
-					}else {
-						String output = baos.toString();
-						if(output.trim().isEmpty()) {
-							output = "Run program succesfully!";
-						}
-						output = output.replaceAll("\r", "");
-						Message msg = new Message(output);
-						msg.setTitle("Output");
-						curr.openDialog(msg);						
+					String output = baos.toString();
+					if(output.trim().isEmpty()) {
+						output = "Run program succesfully!";
 					}
+					output = output.replaceAll("\r", "");
+					Message msg = new Message(output);
+					msg.setTitle("Output");
+					curr.openDialog(msg);
 				}
 			}
 		});
 		
-		language.setChangeListener(new ChangeListener<String>() {
-			@Override
-			public void onChange(String oldValue, String newValue) {
-				IDELanguageSupport lang = IDELanguageManager.getSupport().get(newValue);
-				if(lang == null) {
-					Message msg = new Message("Unknown Language");
+		language.setChangeListener((oldValue, newValue)->{
+			IDELanguageSupport lang = IDELanguageManager.getSupport().get(newValue);
+			if(lang == null) {
+				Message msg = new Message("Unknown Language");
+				msg.setTitle("Error");
+				curr.openDialog(msg);
+			}else {
+				if(currentFile == null){
+					Message msg = new Message("No file to apply language to!");
 					msg.setTitle("Error");
 					curr.openDialog(msg);
 				}else {
@@ -233,52 +219,38 @@ public class IDE extends Application {
 			}
 		});
 		
-		load.setClickListener(new ClickListener() {
-			@Override
-			public void onClick(Component c, int mouseButton) {
-				OpenFile file = new OpenFile(curr);
-				file.setResponseHandler(new ResponseHandler<File>() {
-					@Override
-					public boolean onResponse(boolean success, File e) {
-						loadProject(e);
-						return true;
-					}
-				});
-				curr.openDialog(file);
-			}
+		load.setClickListener((c, mouseButton)-> {
+			OpenFile file = new OpenFile(curr);
+			file.setResponseHandler((success, e)-> {
+					loadProject(e);
+					return true;
+			});
+			curr.openDialog(file);
 		});
 		
-		save.setClickListener(new ClickListener() {
-			@Override
-			public void onClick(Component c, int mouseButton) {
-				currentFile.code = text.getText();
-				
-				NBTTagCompound data = new NBTTagCompound();
-				
-				// save files
-				NBTTagList list = new NBTTagList();
-				for(String file : files.keySet()) {
-					NBTTagCompound comp = new NBTTagCompound();
-					ProjectFile pfile = files.get(file);
-					comp.setString("code", pfile.code);
-					comp.setString("lang", pfile.support.getName());
-					comp.setString("name", pfile.fileName);
-					list.appendTag(comp);
-				}
-				data.setTag("files", list);
-				
-				if(saveTo != null) {
-					saveTo.setData(data);
-				}else {
-					SaveFile file = new SaveFile(curr, new File("", curr, data));
-					file.setResponseHandler(new ResponseHandler<File>() {
-						@Override
-						public boolean onResponse(boolean success, File e) {
-							return true;
-						}
-					});
-					curr.openDialog(file);
-				}
+		save.setClickListener((c, mouseButton)-> {
+			currentFile.code = text.getText();
+
+			NBTTagCompound data = new NBTTagCompound();
+
+			// save files
+			NBTTagList list = new NBTTagList();
+			for(String file : files.keySet()) {
+				NBTTagCompound comp = new NBTTagCompound();
+				ProjectFile pfile = files.get(file);
+				comp.setString("code", pfile.code);
+				comp.setString("lang", pfile.support.getName());
+				comp.setString("name", pfile.fileName);
+				list.appendTag(comp);
+			}
+			data.setTag("files", list);
+
+			if(saveTo != null) {
+				saveTo.setData(data);
+			}else {
+				SaveFile file = new SaveFile(curr, new File("", curr, data));
+				file.setResponseHandler((success, e)->true);
+				curr.openDialog(file);
 			}
 		});
 	}

@@ -12,6 +12,8 @@ import com.mrcrayfish.device.api.app.Application;
 import me.itay.idemodthingy.api.IDELanguageRuntime;
 import me.itay.idemodthingy.programs.IDE.ProjectFile;
 
+import static me.itay.idemodthingy.util.StringUtil.convertStreamToString;
+
 public class IDELanguageRuntimeJS implements IDELanguageRuntime {
 	
 	private static String bootstrap;
@@ -22,12 +24,6 @@ public class IDELanguageRuntimeJS implements IDELanguageRuntime {
 
 		stream = IDELanguageRuntimeJS.class.getResourceAsStream("/assets/idemodthingy/scripts/js/opengl.js");
 		opengl = convertStreamToString(stream);
-	}
-	
-	static String convertStreamToString(java.io.InputStream is) {
-	    @SuppressWarnings("resource")
-		java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-	    return s.hasNext() ? s.next() : "";
 	}
 	
 	@Override

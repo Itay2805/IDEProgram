@@ -52,7 +52,7 @@ task fatJar(type: Jar) {
 dependencies {
 
     compile name: 'joml-1.9.4'
-    compile name: 'device-api-0.1.0-1.11.2'
+    compile name: 'device-api-0.2.0.3-1.11.2'
     compile group: "org.jetbrains.kotlin", name: "kotlin-stdlib", version: kotlin_version
     compile group: "org.jetbrains.kotlin", name: "kotlin-stdlib-jre8", version: kotlin_version
     compile group: "org.jetbrains.kotlin", name: "kotlin-runtime", version: kotlin_version

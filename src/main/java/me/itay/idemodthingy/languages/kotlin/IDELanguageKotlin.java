@@ -9,8 +9,9 @@ import me.itay.idemodthingy.programs.IDE;
 import net.minecraft.util.ResourceLocation;
 
 import java.io.*;
+import java.net.URL;
 import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -31,58 +32,60 @@ public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlig
     @Override
     public String exe(Application app, PrintStream out, TreeMap<String, IDE.ProjectFile> code) {
         try{
-            /*ResourceLocation kotlindirresloc = new ResourceLocation(IDEModProgramThingy.MODID, "kotlin");
-            ResourceLocation kotlinbinresloc = new ResourceLocation(IDEModProgramThingy.MODID, "kotlin/libexec/bin/");*/
-            ResourceLocation outresloc = new ResourceLocation(IDEModProgramThingy.MODID, "kotlin/out/");
-            String resources = String.format("/assets/%s", IDEModProgramThingy.MODID);
-            File kotlindir = new File(String.format("%s/kotlin", resources));
-            File outdir = null;
-//            File kotlincfile = null;
-            File outfile = null;
-            Scanner kotlincfile = null;
-            System.out.println("Path:" + kotlindir.getAbsolutePath());
-            Files.createDirectories(kotlindir.toPath());
-            if(!kotlindir.exists()){
-                if(kotlindir.mkdirs()){
-                    outdir = new File(String.format("%s/out", kotlindir));
-                    kotlincfile = new Scanner(this.getClass().getResourceAsStream("/assets/idemodthingy/kotlin/libexec/bin/kotlinc-jvm"));
-                    outfile = new File(String.format("%s/output.jar", outresloc.getResourcePath()));
-                }
-            }else{
-                outdir = new File(String.format("%s/out", kotlindir));
-                kotlincfile = new Scanner(this.getClass().getResourceAsStream("/assets/idemodthingy/kotlin/libexec/bin/kotlinc-jvm"));
-                outfile = new File(String.format("%s/output.jar", outresloc.getResourcePath()));
-            }
+            ClassLoader classloader = this.getClass().getClassLoader();
+            String cp = "assets/idemodthingy/kotlin/libexec/bin/kotlinc-jvm";
+            URL compiler = classloader.getResource(cp);
+            File outdir = new File(new ResourceLocation(IDEModProgramThingy.MODID, "kotlin/out").getResourcePath());
+            File outfile = new File(outdir.getAbsolutePath() + "/out.jar");
             List<String> filePaths = new ArrayList<>();
-            if(outdir == null) return "";
             if(outdir.exists()){
                 if(outdir.isDirectory()){
-                    writeAndCompile(filePaths, code);
+                    writeAndCompile(filePaths, outdir, code);
                 }else{
                     if(outdir.mkdir()){
-                        writeAndCompile(filePaths, code);
+                        writeAndCompile(filePaths, outdir, code);
                     }else{
                         throw new IOException(String.format("Cannot create directory %s. Don't know why. Talk to Alex about it.", outdir.getAbsolutePath()));
                     }
                 }
             }else if(outdir.mkdir()){
-                writeAndCompile(filePaths, code);
+                writeAndCompile(filePaths, outdir, code);
             }else{
                 throw new IOException(String.format("Cannot create directory %s. Don't know why. Talk to Alex about it.", outdir.getAbsolutePath()));
             }
 
             List<String> commands = new ArrayList<>();
             {
-                if(kotlincfile.hasNext()){
-                        commands.add(kotlincfile.next());
-                        commands.addAll(filePaths);
-                        commands.add("-d");
-                        commands.add(outfile.getAbsolutePath());
+                if(compiler != null){
+                    commands.add(Paths.get(compiler.toURI()).toFile().getAbsolutePath());
+                    commands.addAll(filePaths);
+                    commands.add("-d");
+                    commands.add(outfile.getAbsolutePath());
                 }
             }
             ProcessBuilder pb = new ProcessBuilder(commands);
+            pb.start();
+
+            commands.clear();
+            String rp = "assets/idemodthingy/kotlin/libexec/bin/kotlin";
+            URL runner = classloader.getResource(rp);
+            {
+                if(runner != null) {
+                    commands.add(Paths.get(runner.toURI()).toFile().getAbsolutePath());
+                    commands.add(outfile.getAbsolutePath());
+                }
+            }
+            pb = new ProcessBuilder(commands);
             Process p = pb.start();
-            return String.format("Success with exit code %d", p.exitValue());
+            p.waitFor();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line;
+            StringBuilder sb = new StringBuilder();
+            while((line = br.readLine()) != null){
+                sb.append(line).append("\n");
+            }
+            return sb.toString();
         }catch(Exception e){
             String message = "";
             message+="Build failed with the following errors:\n"
@@ -95,9 +98,9 @@ public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlig
         }
     }
 
-    private void writeAndCompile(List<String> filePaths, TreeMap<String, IDE.ProjectFile> code) throws IOException{
+    private void writeAndCompile(List<String> filePaths, File outdir, TreeMap<String, IDE.ProjectFile> code) throws IOException{
         for(IDE.ProjectFile projectFile : code.values()) {
-            File file = new File(String.format("%s/%s.kt", new ResourceLocation(IDEModProgramThingy.MODID, "kotlin").getResourcePath(), projectFile.fileName));
+            File file = new File(String.format("%s/%s.kt", outdir.getAbsolutePath(), projectFile.fileName));
             System.out.println(file.getAbsolutePath());
             if(!file.exists()) {
                 if(file.createNewFile()) {
@@ -105,7 +108,7 @@ public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlig
                     code.forEach((s, pf) -> {
                         if (pf == projectFile) {
                             try {
-                                bw.write(s);
+                                bw.write(pf.code);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }finally{
