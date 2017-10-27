@@ -35,6 +35,9 @@ public class IDETextArea extends Component {
 	private int lineCount;
 	private Timer timer;
 	
+	private List<Character> newScopeChars = new ArrayList<>();
+	private List<Character> closeScopeChars = new ArrayList<>();
+	
 	private List<ErrorHighlight> errors = new ArrayList<>();
 	private int errorLength;
 	
@@ -54,6 +57,9 @@ public class IDETextArea extends Component {
 	public IDETextArea(int left, int top, int width, int height, IDELanguageHighlight language) {
 		super(left, top);
 		timer = new Timer();
+		
+		newScopeChars.add('{');
+		closeScopeChars.add('}');
 		
 		this.width = width;
 		this.height = height;
@@ -99,7 +105,7 @@ public class IDETextArea extends Component {
 		int currentY = 0;
 		for(int i = from; i < to; i++) {
 			String text = lines.get(i);
-			String[] textToRender = language.tokenize(text);
+			String[] textToRender = language.tokenize(text.replace("\t", "    "));
 			int currentX = 0;
 			for(String word : textToRender) {
 				if(word.length() == 0) continue;
@@ -107,6 +113,7 @@ public class IDETextArea extends Component {
 //					currentX = 0;
 //					currentY += font.FONT_HEIGHT;
 //				}
+
 				font.drawSplitString(word + " ", xPosition + PADDING + 1 + currentX, yPosition + PADDING + 2 + currentY, width - PADDING * 2 - 2, language.getKeywordColor(word));
 				currentX += font.getStringWidth(word);
 			}
@@ -128,7 +135,7 @@ public class IDETextArea extends Component {
 		}
 		
 		for(ErrorHighlight err : errors) {
-			int X = font.getStringWidth(getCurrentLine().substring(0, err.column));
+			int X = font.getStringWidth(getCurrentLine().replace("\t", "    ").substring(0, err.column));
 			int Y = (err.line - from) * font.FONT_HEIGHT + font.FONT_HEIGHT;
 			String finale = "";
 			int length = font.getStringWidth(getCurrentLine().substring(err.column, err.column + err.length));
@@ -145,6 +152,8 @@ public class IDETextArea extends Component {
 		
 		language.reset();
 	}
+	
+	private int scope = 0;
 	
 	@Override
 	public void handleKeyTyped(char character, int code) {
@@ -187,14 +196,18 @@ public class IDETextArea extends Component {
 			case Keyboard.KEY_RETURN:
 				String oldLine = getCurrentLine().substring(0, cursorX);
 				String newLine = getCurrentLine().substring(cursorX);
+				cursorX = 0;
+				for(int i = 0; i < scope; i++) {
+					newLine = "    " + newLine;
+					cursorX += 4;
+				}
 				lines.set(cursorY, oldLine);
 				cursorY++;
 				lines.add(cursorY, newLine);
-				cursorX = 0;
 				checkDown();
 				break;
 			case Keyboard.KEY_TAB:
-				lines.set(cursorY, getCurrentLine().substring(0, cursorX) + "    " + getCurrentLine().substring(cursorX));
+				lines.set(cursorY, getCurrentLine().substring(0, cursorX) + "\t" + getCurrentLine().substring(cursorX));
 				cursorX += 4;
 				break;
 			case Keyboard.KEY_UP: 
@@ -251,7 +264,27 @@ public class IDETextArea extends Component {
 				}
 			default:
 				if(ChatAllowedCharacters.isAllowedCharacter(character)) {
-					lines.set(cursorY, getCurrentLine().substring(0, cursorX) + character + getCurrentLine().substring(cursorX));
+					String toAdd = "" + character;
+					for(Character c : newScopeChars) {						
+						if(c.equals(character)) {
+							scope++;
+							break;
+						}
+					}
+					for(Character c : closeScopeChars) {						
+						if(c.equals(character)) {
+							scope--;
+							break;
+						}
+					}
+					if(character == '{') {
+						toAdd += "}";						
+					}else if(character == '(') {
+						toAdd += ")";
+					}else if(character == '[') {
+						toAdd += "]";
+					}
+					lines.set(cursorY, getCurrentLine().substring(0, cursorX) + toAdd + getCurrentLine().substring(cursorX));
 					cursorX++;
 				}
 				break;
