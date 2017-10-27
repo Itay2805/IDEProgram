@@ -13,8 +13,7 @@ import com.mrcrayfish.device.api.app.component.Button;
 import com.mrcrayfish.device.api.app.component.ItemList;
 import com.mrcrayfish.device.api.io.File;
 
-import me.itay.idemodthingy.components.IDETextArea;
-import me.itay.idemodthingy.languages.text.IDELanguageText;
+import me.itay.idemodthingy.programs.bluej.components.BlueJCodeEditor;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class BlueJ extends Application {
@@ -28,7 +27,7 @@ public class BlueJ extends Application {
 	private Button run, stop;
 	private Button settings;
 	
-	private IDETextArea codeEditor;
+	private BlueJCodeEditor codeEditor;
 	private ItemList<String> files;
 	// TODO add resources
 	// TODO add terminal
@@ -135,7 +134,7 @@ public class BlueJ extends Application {
 		
 		files = new ItemList<>(1, 18, leftPanelWidth, (HEIGHT - 18) / 15 + 1);
 		files.setItemClickListener(this::fileBrowserClickHandler);
-		codeEditor = new IDETextArea(1 + leftPanelWidth, 18, middlePanelWidth, HEIGHT - 23, new IDELanguageText());
+		codeEditor = new BlueJCodeEditor(1 + leftPanelWidth, 18, middlePanelWidth, HEIGHT - 23, null);
 		
 		addComponent(files);
 		addComponent(codeEditor);
@@ -143,8 +142,6 @@ public class BlueJ extends Application {
 		// set project buttons to disabled
 		
 		setProjectButtons(false);
-		
-		markDirty();
 	}
 	
 	////////////////////////// Project Buttons Handlers //////////////////////////
@@ -224,7 +221,7 @@ public class BlueJ extends Application {
 		openedFile = item;
 		ProjectFile file = currentProject.getFile(openedFile);
 		codeEditor.setText(file.getCode());
-		codeEditor.setLanguage(file.getLanguage().getHighlight());
+//		codeEditor.setLanguage(file.getLanguage().getHighlight());
 		
 		codeEditor.setEditable(true);
 		deleteFile.setEnabled(true);

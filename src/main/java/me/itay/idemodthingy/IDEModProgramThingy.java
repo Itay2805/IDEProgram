@@ -24,7 +24,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 public class IDEModProgramThingy
 {
     public static final String MODID = "idemodthingy";
-    public static final String VERSION = "0.4.0";
+    public static final String VERSION = "0.5.0";
     
     @EventHandler
     public void init(FMLInitializationEvent event)
@@ -43,14 +43,13 @@ public class IDEModProgramThingy
 	    	IDELanguageSupport js = new IDELanguageSupport("JavaScript", new IDELanguageJavaScript(), new IDELanguageRuntimeJS());
 	    	IDELanguageManager.addSupport("JavaScript", js);			
 		}
-
 		
     	IDELanguageSupport text = new IDELanguageSupport("Text", new IDELanguageText(), null);
     	IDELanguageManager.addSupport("Text", text);
     	
     	IDELanguageSupport kotlin = new IDELanguageSupport("kotlin", new IDELanguageKotlin(), new IDELanguageKotlin());
     	IDELanguageManager.addSupport("kotlin", kotlin);
-
+    	
     	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:ide"), BlueJ.class);
     	
 //    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:ide"), OLDIDE.class);
