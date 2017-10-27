@@ -10,7 +10,7 @@ import javax.script.ScriptEngineManager;
 import com.mrcrayfish.device.api.app.Application;
 
 import me.itay.idemodthingy.api.IDELanguageRuntime;
-import me.itay.idemodthingy.programs.IDE.ProjectFile;
+import me.itay.idemodthingy.programs.OLDIDE.ProjectFile;
 
 import static me.itay.idemodthingy.util.StringUtil.convertStreamToString;
 
@@ -37,7 +37,7 @@ public class IDELanguageRuntimeJS implements IDELanguageRuntime {
 			if(!files.isEmpty()) engine.eval(files.firstEntry().getValue().code);
 			return null;
 		} catch (Throwable e) {
-			return e.getMessage().replaceAll("", "");
+			return e.getMessage();
 		}
 	}
 	

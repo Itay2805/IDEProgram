@@ -1,21 +1,31 @@
 package me.itay.idemodthingy.languages.kotlin;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.net.URL;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.TreeMap;
+
 import com.mrcrayfish.device.api.app.Application;
+
 import me.itay.idemodthingy.IDEModProgramThingy;
 import me.itay.idemodthingy.api.IDELanguageHighlight;
 import me.itay.idemodthingy.api.IDELanguageRuntime;
 import me.itay.idemodthingy.components.IDETextArea;
-import me.itay.idemodthingy.programs.IDE;
+import me.itay.idemodthingy.programs.OLDIDE;
 import net.minecraft.util.ResourceLocation;
 
-import java.io.*;
-import java.net.URL;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.regex.Pattern;
-
-public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlight{
+public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlight {
 
     private static final String WITH_DELIMITER = "((?<=%1$s)|(?=%1$s))";
     private static final String[] DELIMITERS = { "\\s", "\\p{Punct}", "\\p{Digit}+"  };
@@ -30,7 +40,7 @@ public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlig
     }
 
     @Override
-    public String exe(Application app, PrintStream out, TreeMap<String, IDE.ProjectFile> code) {
+    public String exe(Application app, PrintStream out, TreeMap<String, OLDIDE.ProjectFile> code) {
         try{
             ClassLoader classloader = this.getClass().getClassLoader();
             String cp = "assets/idemodthingy/kotlin/libexec/bin/kotlinc-jvm";
@@ -98,8 +108,8 @@ public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlig
         }
     }
 
-    private void writeAndCompile(List<String> filePaths, File outdir, TreeMap<String, IDE.ProjectFile> code) throws IOException{
-        for(IDE.ProjectFile projectFile : code.values()) {
+    private void writeAndCompile(List<String> filePaths, File outdir, TreeMap<String, OLDIDE.ProjectFile> code) throws IOException{
+        for(OLDIDE.ProjectFile projectFile : code.values()) {
             File file = new File(String.format("%s/%s.kt", outdir.getAbsolutePath(), projectFile.fileName));
             System.out.println(file.getAbsolutePath());
             if(!file.exists()) {
@@ -121,6 +131,7 @@ public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlig
                             }
                         }
                     });
+                    bw.close();
                 }
             }else{
                 throw new FileAlreadyExistsException(
@@ -144,7 +155,6 @@ public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlig
     }
 
     private List<String> previousTokens = new ArrayList<>();
-    private String str = Pattern.compile("[a-zA-Z]+").pattern();
     @Override
     public int getKeywordColor(String text) {
         int color = 0xffffff;

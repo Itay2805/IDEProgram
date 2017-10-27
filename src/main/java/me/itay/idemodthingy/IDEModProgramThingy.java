@@ -2,6 +2,8 @@ package me.itay.idemodthingy;
 
 import java.util.TreeMap;
 
+import javax.script.ScriptEngineManager;
+
 import com.mrcrayfish.device.Reference;
 import com.mrcrayfish.device.api.ApplicationManager;
 import com.mrcrayfish.device.programs.ApplicationPixelPainter;
@@ -12,15 +14,11 @@ import me.itay.idemodthingy.languages.js.IDELanguageJavaScript;
 import me.itay.idemodthingy.languages.js.IDELanguageRuntimeJS;
 import me.itay.idemodthingy.languages.kotlin.IDELanguageKotlin;
 import me.itay.idemodthingy.languages.text.IDELanguageText;
-import me.itay.idemodthingy.programs.IDE;
-import me.itay.idemodthingy.programs.OpenGLTest;
-import me.itay.idemodthingy.programs.Runner;
+import me.itay.idemodthingy.programs.bluej.BlueJ;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-
-import java.util.List;
 
 @Mod(modid = IDEModProgramThingy.MODID, version = IDEModProgramThingy.VERSION)
 public class IDEModProgramThingy
@@ -34,22 +32,29 @@ public class IDEModProgramThingy
     	//load pixel painter
 		ApplicationManager.registerApplication(new ResourceLocation(Reference.MOD_ID, "pixel_painter"), ApplicationPixelPainter.class);
 		
-    	// load the JSVM
-		IDELanguageRuntimeJS temp = new IDELanguageRuntimeJS();
-    	temp.exe(null, null, new TreeMap<>());
-    	temp = null;
-    	
+		if(new ScriptEngineManager().getEngineByName("nashorn") == null) {
+			System.err.println("Could not load JavaScript Nashorn");
+			
+	    	// load the JSVM
+			IDELanguageRuntimeJS temp = new IDELanguageRuntimeJS();
+	    	temp.exe(null, null, new TreeMap<>());
+	    	temp = null;
+	    	
+	    	IDELanguageSupport js = new IDELanguageSupport("JavaScript", new IDELanguageJavaScript(), new IDELanguageRuntimeJS());
+	    	IDELanguageManager.addSupport("JavaScript", js);			
+		}
+
+		
     	IDELanguageSupport text = new IDELanguageSupport("Text", new IDELanguageText(), null);
     	IDELanguageManager.addSupport("Text", text);
     	
-    	IDELanguageSupport js = new IDELanguageSupport("JavaScript", new IDELanguageJavaScript(), new IDELanguageRuntimeJS());
-    	IDELanguageManager.addSupport("JavaScript", js);
-
     	IDELanguageSupport kotlin = new IDELanguageSupport("kotlin", new IDELanguageKotlin(), new IDELanguageKotlin());
     	IDELanguageManager.addSupport("kotlin", kotlin);
 
-    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:ide"), IDE.class);
-    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:runtime"), Runner.class);
-    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:glcontexttest"), OpenGLTest.class);
+    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:ide"), BlueJ.class);
+    	
+//    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:ide"), OLDIDE.class);
+//    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:runtime"), Runner.class);
+//    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:glcontexttest"), OpenGLTest.class);
     }
 }

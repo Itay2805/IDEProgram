@@ -105,7 +105,7 @@ public class IDETextArea extends Component {
 		int currentY = 0;
 		for(int i = from; i < to; i++) {
 			String text = lines.get(i);
-			String[] textToRender = language.tokenize(text.replace("\t", "    "));
+			String[] textToRender = language.tokenize(text);
 			int currentX = 0;
 			for(String word : textToRender) {
 				if(word.length() == 0) continue;
@@ -135,7 +135,7 @@ public class IDETextArea extends Component {
 		}
 		
 		for(ErrorHighlight err : errors) {
-			int X = font.getStringWidth(getCurrentLine().replace("\t", "    ").substring(0, err.column));
+			int X = font.getStringWidth(getCurrentLine().substring(0, err.column));
 			int Y = (err.line - from) * font.FONT_HEIGHT + font.FONT_HEIGHT;
 			String finale = "";
 			int length = font.getStringWidth(getCurrentLine().substring(err.column, err.column + err.length));
@@ -153,14 +153,14 @@ public class IDETextArea extends Component {
 		language.reset();
 	}
 	
-	private int scope = 0;
+//	private int scope = 0;
 	
 	@Override
 	public void handleKeyTyped(char character, int code) {
 		if(!editable) return;
 		
 		if(GuiScreen.isKeyComboCtrlV(code)) {
-			String[] clipLines = GuiScreen.getClipboardString().replace("\r", "").replace("\r", "    ").split("\n");
+			String[] clipLines = GuiScreen.getClipboardString().replace("\r", "").replace("\t", "    ").split("\n");
 			for(String line : clipLines) {
 				lines.add(cursorY, line);
 				cursorY++;
@@ -197,17 +197,17 @@ public class IDETextArea extends Component {
 				String oldLine = getCurrentLine().substring(0, cursorX);
 				String newLine = getCurrentLine().substring(cursorX);
 				cursorX = 0;
-				for(int i = 0; i < scope; i++) {
-					newLine = "    " + newLine;
-					cursorX += 4;
-				}
+//				for(int i = 0; i < scope; i++) {
+//					newLine = "    " + newLine;
+//					cursorX += 4;
+//				}
 				lines.set(cursorY, oldLine);
 				cursorY++;
 				lines.add(cursorY, newLine);
 				checkDown();
 				break;
 			case Keyboard.KEY_TAB:
-				lines.set(cursorY, getCurrentLine().substring(0, cursorX) + "\t" + getCurrentLine().substring(cursorX));
+				lines.set(cursorY, getCurrentLine().substring(0, cursorX) + "    " + getCurrentLine().substring(cursorX));
 				cursorX += 4;
 				break;
 			case Keyboard.KEY_UP: 
@@ -265,18 +265,18 @@ public class IDETextArea extends Component {
 			default:
 				if(ChatAllowedCharacters.isAllowedCharacter(character)) {
 					String toAdd = "" + character;
-					for(Character c : newScopeChars) {						
-						if(c.equals(character)) {
-							scope++;
-							break;
-						}
-					}
-					for(Character c : closeScopeChars) {						
-						if(c.equals(character)) {
-							scope--;
-							break;
-						}
-					}
+//					for(Character c : newScopeChars) {						
+//						if(c.equals(character)) {
+//							scope++;
+//							break;
+//						}
+//					}
+//					for(Character c : closeScopeChars) {						
+//						if(c.equals(character)) {
+//							scope--;
+//							break;
+//						}
+//					}
 					if(character == '{') {
 						toAdd += "}";						
 					}else if(character == '(') {

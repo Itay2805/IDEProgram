@@ -13,7 +13,7 @@ import com.mrcrayfish.device.api.app.component.TextField;
 import com.mrcrayfish.device.api.app.listener.ClickListener;
 
 import me.itay.idemodthingy.components.GLCanvas;
-import me.itay.idemodthingy.programs.IDE.ProjectFile;
+import me.itay.idemodthingy.programs.OLDIDE.ProjectFile;
 import me.itay.idemodthingy.programs.Runner;
 
 public class RuntimeFeatures {

@@ -7,18 +7,13 @@ import java.util.Arrays;
 import java.util.TreeMap;
 
 import com.mrcrayfish.device.api.app.Application;
-import com.mrcrayfish.device.api.app.Component;
 import com.mrcrayfish.device.api.app.Dialog.Input;
 import com.mrcrayfish.device.api.app.Dialog.Message;
 import com.mrcrayfish.device.api.app.Dialog.OpenFile;
-import com.mrcrayfish.device.api.app.Dialog.ResponseHandler;
 import com.mrcrayfish.device.api.app.Dialog.SaveFile;
 import com.mrcrayfish.device.api.app.component.Button;
 import com.mrcrayfish.device.api.app.component.ComboBox.List;
 import com.mrcrayfish.device.api.app.component.ItemList;
-import com.mrcrayfish.device.api.app.listener.ChangeListener;
-import com.mrcrayfish.device.api.app.listener.ClickListener;
-import com.mrcrayfish.device.api.app.listener.ItemClickListener;
 import com.mrcrayfish.device.api.io.File;
 
 import me.itay.idemodthingy.api.IDELanguageManager;
@@ -29,7 +24,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants.NBT;
 
-public class IDE extends Application {
+public class OLDIDE extends Application {
 
 	private List<String> language;
 	private Button run;
@@ -138,7 +133,7 @@ public class IDE extends Application {
 		addComponent(deleteFile);
 		addComponent(newFile);
 		
-		IDE curr = this;
+		OLDIDE curr = this;
 
 		newFile.setClickListener((c, mouseButton)-> {
 			Input input = new Input("File name");

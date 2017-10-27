@@ -5,7 +5,7 @@ import java.util.TreeMap;
 
 import com.mrcrayfish.device.api.app.Application;
 
-import me.itay.idemodthingy.programs.IDE.ProjectFile;
+import me.itay.idemodthingy.programs.OLDIDE.ProjectFile;
 
 public interface IDELanguageRuntime {
 	
