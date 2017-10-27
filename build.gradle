@@ -21,7 +21,7 @@ repositories {
 }
 
 
-version = "1.2.0"
+version = "0.5.0"
 group = "me.itay.idemodthingy" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "idemodthingy"
 
@@ -52,10 +52,12 @@ task fatJar(type: Jar) {
 dependencies {
 
     compile name: 'joml-1.9.4'
-    compile name: 'device-api-0.2.0.3-1.11.2'
+    compile name: 'device-api-0.2.0pre3-1.11.2'
+
     compile group: "org.jetbrains.kotlin", name: "kotlin-stdlib", version: kotlin_version
     compile group: "org.jetbrains.kotlin", name: "kotlin-stdlib-jre8", version: kotlin_version
     compile group: "org.jetbrains.kotlin", name: "kotlin-runtime", version: kotlin_version
+
 //    compile group: "org.jetbrains.kotlin", name: "kotlin-compiler", version: kotlin_version
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
