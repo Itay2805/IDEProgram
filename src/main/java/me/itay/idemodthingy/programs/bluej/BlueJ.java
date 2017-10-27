@@ -21,9 +21,9 @@ public class BlueJ extends Application {
 	
 	private static final int WIDTH = 362, HEIGHT = 164;
 	
-	private Button newProject, openProject, saveProject;
-	// TODO Import and export project
+	private Button newProject, openProject, saveProject, exportProject;
 	private Button newFile, deleteFile;
+	private Button copyAll, paste;
 	// TODO Import and export resources
 	private Button run, stop;
 	private Button settings;
@@ -82,10 +82,13 @@ public class BlueJ extends Application {
 		saveProject = new Button(getNextBtnPos(), 1, Icon.SAVE);
 		saveProject.setClickListener(this::saveProjectHandler);
 		saveProject.setToolTip("Save Project", "Save current project");
-
+//		exportProject = new Button(getNextBtnPos(), 1, Icon.EXPORT);
+//		exportProject.setToolTip("Export Project", "Export the project as a runnable");
+		
 		addComponent(newProject);
 		addComponent(openProject);
 		addComponent(saveProject);
+		addComponent(exportProject);
 		
 		addSeperator();
 		
@@ -99,6 +102,18 @@ public class BlueJ extends Application {
 		addComponent(newFile);
 		addComponent(deleteFile);
 
+		addSeperator();
+		
+		copyAll = new Button(getNextBtnPos(), 1, Icon.COPY);
+		copyAll.setToolTip("Copy All", "Copy all the contents of the current file to the clipboard");
+		copyAll.setEnabled(false);
+		paste = new Button(getNextBtnPos(), 1, Icon.CLIPBOARD);
+		paste.setToolTip("Paste", "Paste the contents of the clipboard to the current file");
+		paste.setEnabled(false);
+		
+		addComponent(copyAll);
+		addComponent(paste);
+		
 		addSeperator();
 		
 		run = new Button(getNextBtnPos(), 1, Icon.PLAY);
