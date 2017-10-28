@@ -13,7 +13,9 @@ import com.mrcrayfish.device.api.app.component.Button;
 import com.mrcrayfish.device.api.app.component.ItemList;
 import com.mrcrayfish.device.api.io.File;
 
+import com.mrcrayfish.device.api.io.Folder;
 import me.itay.idemodthingy.programs.bluej.components.BlueJCodeEditor;
+import me.itay.idemodthingy.programs.bluej.resources.BlueJResourceLocation;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class BlueJ extends Application {
@@ -34,7 +36,9 @@ public class BlueJ extends Application {
 	
 	private Project currentProject;
 	private String openedFile;
+	private Folder workspace;
 	private File saveLocation;
+	private File projectData;
 	
 	private int leftPanelWidth;
 	private int middlePanelWidth;
@@ -149,20 +153,22 @@ public class BlueJ extends Application {
 	private void createProjectHandler(Component c, int button) {
 		unloadProject(() -> {
 			currentProject = new Project();
-			
-			SaveFile save = new SaveFile(this, currentProject.toNBT());
-			save.setResponseHandler((success, file) -> {
-				if(success && file != null) {
-					saveLocation = file;
-
-					// enable project buttons
-					setProjectButtons(true);
-				}else {
-					currentProject = null;
+			AddFileDialog input = new AddFileDialog();
+			input.setResponseHandler((success, file)->{
+				workspace = new Folder(file.getName());
+				currentProject.setName(file.getName());
+				currentProject.setPath(workspace.getName());
+				BlueJResourceLocation resloc = new BlueJResourceLocation("project", "/", file.getName());
+				NBTTagCompound nbt = new NBTTagCompound();
+				{
+					nbt.setString("project_name", file.getName());
+					nbt.setInteger("number_files", 0);
+					nbt.setString("resloc", resloc.toString());
 				}
+				projectData = new File(file.getName(), this, nbt);
+				//will add necessary project and IDE files later
 				return true;
 			});
-			openDialog(save);
 		});
 	}
 	

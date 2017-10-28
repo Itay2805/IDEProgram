@@ -97,9 +97,6 @@ public class AddFileDialog extends Dialog {
 	 * @param inputText
 	 */
 	public void setInputText(@Nonnull String inputText) {
-		if (inputText == null) {
-			throw new IllegalArgumentException("Text can't be null");
-		}
 		this.inputText = inputText;
 	}
 
@@ -119,9 +116,6 @@ public class AddFileDialog extends Dialog {
 	 * @param positiveText
 	 */
 	public void setPositiveText(@Nonnull String positiveText) {
-		if (positiveText == null) {
-			throw new IllegalArgumentException("Text can't be null");
-		}
 		this.positiveText = positiveText;
 	}
 
@@ -131,9 +125,6 @@ public class AddFileDialog extends Dialog {
 	 * @param negativeText
 	 */
 	public void setNegativeText(@Nonnull String negativeText) {
-		if (negativeText == null) {
-			throw new IllegalArgumentException("Text can't be null");
-		}
 		this.negativeText = negativeText;
 	}
 
