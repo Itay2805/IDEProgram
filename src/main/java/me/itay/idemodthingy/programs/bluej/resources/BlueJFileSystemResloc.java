@@ -6,7 +6,6 @@ import com.mrcrayfish.device.api.io.Drive;
 import com.mrcrayfish.device.api.io.File;
 import com.mrcrayfish.device.api.io.Folder;
 import com.mrcrayfish.device.core.Laptop;
-import com.mrcrayfish.device.core.io.FileSystem;
 import com.mrcrayfish.device.programs.system.component.FileBrowser;
 
 import net.minecraft.nbt.NBTTagCompound;
@@ -78,6 +77,9 @@ public class BlueJFileSystemResloc implements BlueJResolvedResloc {
 
 	@Override
 	public NBTTagCompound getData() {
+		if(isFile()) {
+			return file.getData();
+		}
 		return null;
 	}
 
@@ -110,13 +112,24 @@ public class BlueJFileSystemResloc implements BlueJResolvedResloc {
 	
 	@Override
 	public void mkdir() {
-		Folder folder = new Folder(FileSystem.DIR_HOME);
+		if(exists) return;
+		
+		Drive drive = Laptop.getMainDrive();
+		Folder folder = drive.getRoot();
+		
 		path = path.replace("\\", "/");
 		String[] files = path.split("/");
 		for(int i = 0; i < files.length; i++) {
 			if(files[i].isEmpty()) continue;
 			if(!folder.hasFolder(files[i])) {
 				folder.add(new Folder(files[i]));
+			}
+			while(folder.getFolder(files[i]) == null) {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 			folder = folder.getFolder(files[i]);
 		}
