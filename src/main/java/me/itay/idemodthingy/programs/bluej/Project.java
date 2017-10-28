@@ -13,7 +13,7 @@ public class Project {
 	private static final String FILES_TAG = "files";
 
 	private String name;
-	private String path;
+	private BlueJResourceLocation path;
 
 	private TreeMap<String, ProjectFile> files = new TreeMap<>();
 	
@@ -60,13 +60,7 @@ public class Project {
 		this.name = name;
 	}
 
-	public void setPath(String path){
-		this.path = path;
-	}
-
-	@Override
-	public String toString() {
-		BlueJResourceLocation resloc = new BlueJResourceLocation("project", "/", this.path);
-		return resloc.toString();
+	public BlueJResourceLocation getResourceLocation() {
+		return new BlueJResourceLocation("project", "[" + path.toString() + "]", name);
 	}
 }

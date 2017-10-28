@@ -7,15 +7,22 @@ import com.mrcrayfish.device.api.app.Component;
 import com.mrcrayfish.device.api.app.Dialog.Confirmation;
 import com.mrcrayfish.device.api.app.Dialog.Message;
 import com.mrcrayfish.device.api.app.Dialog.OpenFile;
-import com.mrcrayfish.device.api.app.Dialog.SaveFile;
 import com.mrcrayfish.device.api.app.Icon;
+import com.mrcrayfish.device.api.app.Layout;
 import com.mrcrayfish.device.api.app.component.Button;
 import com.mrcrayfish.device.api.app.component.ItemList;
 import com.mrcrayfish.device.api.io.File;
-
 import com.mrcrayfish.device.api.io.Folder;
+import com.mrcrayfish.device.core.Laptop;
+import com.mrcrayfish.device.core.Wrappable;
+import com.mrcrayfish.device.core.io.FileSystem;
+import com.mrcrayfish.device.programs.system.component.FileBrowser;
+
 import me.itay.idemodthingy.programs.bluej.components.BlueJCodeEditor;
+import me.itay.idemodthingy.programs.bluej.resources.BlueJReslocResolver;
+import me.itay.idemodthingy.programs.bluej.resources.BlueJResolvedResloc;
 import me.itay.idemodthingy.programs.bluej.resources.BlueJResourceLocation;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class BlueJ extends Application {
@@ -152,23 +159,26 @@ public class BlueJ extends Application {
 	
 	private void createProjectHandler(Component c, int button) {
 		unloadProject(() -> {
-			currentProject = new Project();
-			AddFileDialog input = new AddFileDialog();
-			input.setResponseHandler((success, file)->{
-				workspace = new Folder(file.getName());
-				currentProject.setName(file.getName());
-				currentProject.setPath(workspace.getName());
-				BlueJResourceLocation resloc = new BlueJResourceLocation("project", "/", file.getName());
-				NBTTagCompound nbt = new NBTTagCompound();
-				{
-					nbt.setString("project_name", file.getName());
-					nbt.setInteger("number_files", 0);
-					nbt.setString("resloc", resloc.toString());
-				}
-				projectData = new File(file.getName(), this, nbt);
-				//will add necessary project and IDE files later
-				return true;
-			});
+			BlueJResolvedResloc resloc = BlueJReslocResolver.resolveBlueJResourceLocation(new BlueJResourceLocation("project", new BlueJResourceLocation("files", "home", "myfolder/projectfile"), "somefile"));
+			System.out.println(resloc.exists());
+			resloc.create();
+//			currentProject = new Project();
+//			AddFileDialog input = new AddFileDialog();
+//			input.setResponseHandler((success, file)->{
+//				workspace = new Folder(file.getName());
+//				currentProject.setName(file.getName());
+//				currentProject.setPath(workspace.getName());
+//				BlueJResourceLocation resloc = new BlueJResourceLocation("project", "/", file.getName());
+//				NBTTagCompound nbt = new NBTTagCompound();
+//				{
+//					nbt.setString("project_name", file.getName());
+//					nbt.setInteger("number_files", 0);
+//					nbt.setString("resloc", resloc.toString());
+//				}
+//				projectData = new File(file.getName(), this, nbt);
+//				//will add necessary project and IDE files later
+//				return true;
+//			});
 		});
 	}
 	
