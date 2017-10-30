@@ -37,8 +37,9 @@ public class BlueJCodeEditor extends Component {
 	private SyntaxHighlighter highlighter;
 	private Project project;
 	private ProjectFile currentFile;
-	private List<Token> parsed;
-	private List<Problem> errors;
+	private List<List<Token>> parsed;
+	private List<Problem> problems;
+	private int errorLength;
 	private boolean textChanged = false;
 	private Timer errorTimer = new Timer();
 	
@@ -57,6 +58,15 @@ public class BlueJCodeEditor extends Component {
 		FontRenderer font = Minecraft.getMinecraft().fontRendererObj;
 		
 		maxLines = (int) Math.floor((height - 4) / font.FONT_HEIGHT + 1);
+		errorLength = (int)(font.getCharWidth('~'));
+		
+		problems = new ArrayList<>();
+		problems.add(new Problem(1, 1, 10, "This is a test", Color.RED.getRGB()));
+		lines.add("");
+		lines.add("114d 4adw 8 d4wa8d4 8wad4a6wd6a84d awd 8a8w dad48a4d 8a");
+		lines.add("");
+		lines.add("");
+		lines.add("");
 	}
 	
 	
@@ -65,7 +75,7 @@ public class BlueJCodeEditor extends Component {
 		if(highlighter != null && project != null && currentFile != null) {
 			// get errors half a second after finished typing
 			if(errorTimer.elapsed() >= 0.5) {
-				errors = highlighter.getProblems(currentFile);
+				problems = highlighter.getProblems(currentFile);
 				errorTimer.reset();
 			}
 			
@@ -101,6 +111,20 @@ public class BlueJCodeEditor extends Component {
 				font.drawString(lines.get(i).replace("\t", "    "), 2 + xPosition, 2 + yPosition + Y, Color.WHITE.getRGB());
 			}
 		}else {
+			// with highlight
+			for(int i = from; i < from + maxLines; i++) {
+				if(i >= lines.size()) {
+					break;
+				}
+				List<Token> tokens = parsed.get(i);
+				int Y = i * font.FONT_HEIGHT;
+				int X = 0;
+				for(Token token : tokens) {
+					String text = token.getToken().replace("\t", "    ");
+					font.drawString(text, 2 + xPosition + X, 2 + yPosition + Y, token.getColor());
+					X += font.getStringWidth(text);
+				}
+			}
 		}
 		
 		if(editable) {
@@ -112,6 +136,19 @@ public class BlueJCodeEditor extends Component {
 			}
 		}
 		
+		// render errors
+		for(Problem problem : problems) {
+			if(from >= problem.getLine() || from + maxLines < problem.getLine()) {
+				continue;
+			}
+			int X = font.getStringWidth(lines.get(problem.getLine()).substring(0, problem.getColumn()));
+			int Y = problem.getLine() * font.FONT_HEIGHT * 2;
+			int length = problem.getLength();
+			while((length--) > 0) {
+				font.drawString("~", 2 + xPosition + X, 2 + yPosition + Y, problem.getColor());
+				X += errorLength;
+			}
+		}
 	}
 	
 	@Override

@@ -1,15 +1,15 @@
 package me.itay.idemodthingy.programs.bluej.api;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import me.itay.idemodthingy.programs.bluej.Project;
 import me.itay.idemodthingy.programs.bluej.api.comp.Button;
 import me.itay.idemodthingy.programs.bluej.api.comp.ComboBox;
 import me.itay.idemodthingy.programs.bluej.api.comp.Component;
 import me.itay.idemodthingy.programs.bluej.resources.BlueJResourceLocation;
 import net.minecraft.util.ResourceLocation;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public final class ComponentBuilder {
     private String text, name;
@@ -68,7 +68,7 @@ public final class ComponentBuilder {
         this.parent = parent;
         return this;
     }
-
+    
     public ComponentBuilder setType(String type){
         this.type = type;
         return this;

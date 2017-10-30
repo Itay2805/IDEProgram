@@ -8,7 +8,7 @@ import me.itay.idemodthingy.programs.bluej.ProjectFile;
 public interface SyntaxHighlighter {
 	
 	public String getName();
-	public List<Token> parse(Project project, ProjectFile currentFile);
+	public List<List<Token>> parse(Project project, ProjectFile currentFile);
 	public List<Problem> getProblems(ProjectFile file);
 	public void reset();
 	
