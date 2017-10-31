@@ -3,26 +3,32 @@ package me.itay.idemodthingy.programs.bluej;
 import java.util.Set;
 import java.util.TreeMap;
 
+import me.itay.idemodthingy.programs.bluej.resources.BlueJResolvedResloc;
 import me.itay.idemodthingy.programs.bluej.resources.BlueJResourceLocation;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants.NBT;
 
 public class Project {
 	
-	private static final String FILES_TAG = "files";
+	public static final String TYPE_TAG = "type";
+
+	public static final String TYPE_CODE_FILE = "CODE";
 
 	private String name;
 	private BlueJResourceLocation path;
+	private BlueJResolvedResloc resolved;
 
 	private TreeMap<String, ProjectFile> files = new TreeMap<>();
 	
 	public void addFile(ProjectFile file) {
 		files.put(file.getName(), file);
+		BlueJResolvedResloc resolved = getResolvedResourceLocation().getFile(file.getName());
+		resolved.create();
+		resolved.setData(file.toNBT());
 	}
 	
 	public void removeFile(String name) {
 		files.remove(name);
+		getResolvedResourceLocation().getFile(name).delete();
 	}
 	
 	public ProjectFile getFile(String name) {
@@ -33,34 +39,31 @@ public class Project {
 		return files.keySet();
 	}
 	
-	public static Project fromNBT(NBTTagCompound data) {
-		Project result = new Project();
-		
-		NBTTagList list = data.getTagList(FILES_TAG, NBT.TAG_COMPOUND);
-		for(int i = 0; i < list.tagCount(); i++) {
-			result.addFile(ProjectFile.fromNBT(list.getCompoundTagAt(i)));
+	public static Project loadProject(BlueJResourceLocation resloc) {
+		BlueJResolvedResloc resolved = resloc.resolve();
+//		NBTTagCompound projectData = resolved.getData();
+		Project proj = new Project();
+		proj.path = resloc;
+		for(String file : resolved.listFiles()) {
+			BlueJResolvedResloc f = resolved.getFile(file);
+			if(f.getData().hasKey(TYPE_TAG, NBT.TAG_STRING) && f.getData().getString("type").equals(TYPE_CODE_FILE)) {
+				proj.files.put(f.name(), ProjectFile.fromNBT(f.getData()));
+			}
 		}
-		
-		return result;
+		proj.resolved = proj.getResourceLocation().resolve();
+		return proj;
 	}
 	
-	public NBTTagCompound toNBT() {
-		NBTTagCompound projectNBT = new NBTTagCompound();
-		
-		NBTTagList filesList = new NBTTagList();
-		for(ProjectFile pfile : files.values()) {
-			filesList.appendTag(pfile.toNBT());
-		}
-		projectNBT.setTag(FILES_TAG, filesList);
-		
-		return projectNBT;
-	}
-
 	public void setName(String name){
 		this.name = name;
 	}
 
 	public BlueJResourceLocation getResourceLocation() {
-		return new BlueJResourceLocation("project", "[" + path.toString() + "]", name);
+		return new BlueJResourceLocation("project", path, name);
 	}
+	
+	public BlueJResolvedResloc getResolvedResourceLocation() {
+		return resolved;
+	}
+	
 }

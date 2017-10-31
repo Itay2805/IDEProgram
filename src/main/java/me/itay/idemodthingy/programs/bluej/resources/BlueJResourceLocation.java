@@ -18,6 +18,10 @@ public class BlueJResourceLocation {
         this.reslocCtx = ctx;
     }
 
+    public BlueJResolvedResloc resolve() {
+    	return BlueJReslocResolver.resolveBlueJResourceLocation(this);
+    }
+    
     @Override
     public String toString() {
         return this.domain + "://" + this.context + "/" + this.path;

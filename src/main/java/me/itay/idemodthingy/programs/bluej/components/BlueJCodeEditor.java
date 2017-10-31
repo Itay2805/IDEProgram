@@ -59,14 +59,6 @@ public class BlueJCodeEditor extends Component {
 		
 		maxLines = (int) Math.floor((height - 4) / font.FONT_HEIGHT + 1);
 		errorLength = (int)(font.getCharWidth('~'));
-		
-		problems = new ArrayList<>();
-		problems.add(new Problem(1, 1, 10, "This is a test", Color.RED.getRGB()));
-		lines.add("");
-		lines.add("114d 4adw 8 d4wa8d4 8wad4a6wd6a84d awd 8a8w dad48a4d 8a");
-		lines.add("");
-		lines.add("");
-		lines.add("");
 	}
 	
 	
@@ -137,16 +129,18 @@ public class BlueJCodeEditor extends Component {
 		}
 		
 		// render errors
-		for(Problem problem : problems) {
-			if(from >= problem.getLine() || from + maxLines < problem.getLine()) {
-				continue;
-			}
-			int X = font.getStringWidth(lines.get(problem.getLine()).substring(0, problem.getColumn()));
-			int Y = problem.getLine() * font.FONT_HEIGHT * 2;
-			int length = problem.getLength();
-			while((length--) > 0) {
-				font.drawString("~", 2 + xPosition + X, 2 + yPosition + Y, problem.getColor());
-				X += errorLength;
+		if(highlighter != null) {
+			for(Problem problem : problems) {
+				if(from >= problem.getLine() || from + maxLines < problem.getLine()) {
+					continue;
+				}
+				int X = font.getStringWidth(lines.get(problem.getLine()).substring(0, problem.getColumn()));
+				int Y = problem.getLine() * font.FONT_HEIGHT * 2;
+				int length = problem.getLength();
+				while((length--) > 0) {
+					font.drawString("~", 2 + xPosition + X, 2 + yPosition + Y, problem.getColor());
+					X += errorLength;
+				}
 			}
 		}
 	}
@@ -290,6 +284,8 @@ public class BlueJCodeEditor extends Component {
 		for(String line : text.replace("\r", "").split("\n")) {
 			lines.add(line);
 		}
+		this.cursorX = 0;
+		this.cursorY = 0;
 		return this;
 	}
 	

@@ -5,31 +5,22 @@ import java.util.ArrayList;
 import com.mrcrayfish.device.api.app.Application;
 import com.mrcrayfish.device.api.app.Component;
 import com.mrcrayfish.device.api.app.Dialog.Confirmation;
-import com.mrcrayfish.device.api.app.Dialog.Message;
 import com.mrcrayfish.device.api.app.Dialog.OpenFile;
+import com.mrcrayfish.device.api.app.Dialog.SaveFile;
 import com.mrcrayfish.device.api.app.Icon;
-import com.mrcrayfish.device.api.app.Layout;
 import com.mrcrayfish.device.api.app.component.Button;
 import com.mrcrayfish.device.api.app.component.ItemList;
 import com.mrcrayfish.device.api.io.File;
-import com.mrcrayfish.device.api.io.Folder;
-import com.mrcrayfish.device.core.Laptop;
-import com.mrcrayfish.device.core.Wrappable;
-import com.mrcrayfish.device.core.io.FileSystem;
-import com.mrcrayfish.device.programs.system.component.FileBrowser;
 
 import me.itay.idemodthingy.programs.bluej.components.BlueJCodeEditor;
-import me.itay.idemodthingy.programs.bluej.resources.BlueJReslocResolver;
-import me.itay.idemodthingy.programs.bluej.resources.BlueJResolvedResloc;
 import me.itay.idemodthingy.programs.bluej.resources.BlueJResourceLocation;
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class BlueJ extends Application {
 	
 	private static final int WIDTH = 362, HEIGHT = 164;
 	
-	private Button newProject, openProject, saveProject, exportProject;
+	private Button newProject, openProject, saveFile, exportProject;
 	private Button newFile, deleteFile;
 	private Button copyAll, paste;
 	// TODO Import and export resources
@@ -42,10 +33,8 @@ public class BlueJ extends Application {
 	// TODO add terminal
 	
 	private Project currentProject;
-	private String openedFile;
-	private Folder workspace;
-	private File saveLocation;
-	private File projectData;
+	private ProjectFile openedFile;
+	private int openedFileHash;
 	
 	private int leftPanelWidth;
 	private int middlePanelWidth;
@@ -74,7 +63,6 @@ public class BlueJ extends Application {
 	public void init() {
 		currentProject = null;
 		openedFile = null;
-		saveLocation = null;
 		
 		setDefaultWidth(WIDTH);
 		setDefaultHeight(HEIGHT);
@@ -89,15 +77,12 @@ public class BlueJ extends Application {
 		openProject = new Button(getNextBtnPos(), 1, Icon.LOAD);
 		openProject.setToolTip("Open Project", "Open an exsting project");
 		openProject.setClickListener(this::loadProjectHandler);
-		saveProject = new Button(getNextBtnPos(), 1, Icon.SAVE);
-		saveProject.setClickListener(this::saveProjectHandler);
-		saveProject.setToolTip("Save Project", "Save current project");
-//		exportProject = new Button(getNextBtnPos(), 1, Icon.EXPORT);
-//		exportProject.setToolTip("Export Project", "Export the project as a runnable");
+		exportProject = new Button(getNextBtnPos(), 1, Icon.EXPORT);
+		exportProject.setToolTip("Export Project", "Export the project as a runnable");
+		exportProject.setEnabled(false);
 		
 		addComponent(newProject);
 		addComponent(openProject);
-		addComponent(saveProject);
 		addComponent(exportProject);
 		
 		addSeperator();
@@ -108,9 +93,15 @@ public class BlueJ extends Application {
 		deleteFile = new Button(getNextBtnPos(), 1, Icon.TRASH);
 		deleteFile.setToolTip("Delete File", "Delete selected file");
 		deleteFile.setClickListener(this::deleteFileHandler);
+		deleteFile.setEnabled(false);
+		saveFile = new Button(getNextBtnPos(), 1, Icon.SAVE);
+		saveFile.setClickListener(this::saveFileHandler);
+		saveFile.setToolTip("Save File", "Save current file");
+		saveFile.setEnabled(false);
 		
 		addComponent(newFile);
 		addComponent(deleteFile);
+		addComponent(saveFile);
 
 		addSeperator();
 		
@@ -158,28 +149,18 @@ public class BlueJ extends Application {
 	////////////////////////// Project Buttons Handlers //////////////////////////
 	
 	private void createProjectHandler(Component c, int button) {
-		unloadProject(() -> {
-			BlueJResolvedResloc resloc = BlueJReslocResolver.resolveBlueJResourceLocation(new BlueJResourceLocation("project", new BlueJResourceLocation("files", "home", "myfolder/projectfile"), "somefile"));
-			System.out.println(resloc.exists());
-			resloc.create();
-//			currentProject = new Project();
-//			AddFileDialog input = new AddFileDialog();
-//			input.setResponseHandler((success, file)->{
-//				workspace = new Folder(file.getName());
-//				currentProject.setName(file.getName());
-//				currentProject.setPath(workspace.getName());
-//				BlueJResourceLocation resloc = new BlueJResourceLocation("project", "/", file.getName());
-//				NBTTagCompound nbt = new NBTTagCompound();
-//				{
-//					nbt.setString("project_name", file.getName());
-//					nbt.setInteger("number_files", 0);
-//					nbt.setString("resloc", resloc.toString());
-//				}
-//				projectData = new File(file.getName(), this, nbt);
-//				//will add necessary project and IDE files later
-//				return true;
-//			});
-		});
+			currentProject = new Project();
+			SaveFile input = new SaveFile(this, new NBTTagCompound());
+			input.setResponseHandler((success, file)->{
+				if(success) {
+					unloadProject(() -> {
+						BlueJResourceLocation resloc = new BlueJResourceLocation("files", "root", file.getPath());
+						currentProject = Project.loadProject(resloc);
+					});
+				}
+				return true;
+			});
+			openDialog(input);
 	}
 	
 	private void loadProjectHandler(Component c, int button) {
@@ -195,8 +176,8 @@ public class BlueJ extends Application {
 		});
 	}
 	
-	private void saveProjectHandler(Component c, int button) {
-		saveProject();
+	private void saveFileHandler(Component c, int button) {
+		saveOpenedFile();
 	}
 	
 	////////////////////////// File Buttons Handlers //////////////////////////
@@ -214,68 +195,55 @@ public class BlueJ extends Application {
 	}
 	
 	private void deleteFileHandler(Component c, int button) {
-		if(files.getSelectedIndex() < 0) {
-			deleteFile.setEnabled(false);
-			return;
-		}
-		
 		files.removeItem(files.getSelectedIndex());
 		deleteFile.setEnabled(false);
 		codeEditor.setEditable(false);
 		codeEditor.setText("");
 		files.setSelectedIndex(-1);
-		currentProject.removeFile(openedFile);
+		currentProject.removeFile(openedFile.getName());
 		openedFile = null;
 	}
 	
 	////////////////////////// Other Handlers //////////////////////////
 
 	private void fileBrowserClickHandler(String item, int index, int button) {
-		if(openedFile != null) {
-			currentProject.getFile(openedFile).setCode(codeEditor.getText());
-		}
-		openedFile = item;
-		ProjectFile file = currentProject.getFile(openedFile);
-		codeEditor.setText(file.getCode());
-//		codeEditor.setLanguage(file.getLanguage().getHighlight());
-		
-		codeEditor.setEditable(true);
-		deleteFile.setEnabled(true);
+		unloadFile(() -> {
+			if(openedFile != null) {
+				openedFile.setCode(codeEditor.getText());
+			}
+			openedFile = currentProject.getFile(item);
+			codeEditor.setText(openedFile.getCode());
+//			codeEditor.setLanguage(file.getLanguage().getHighlight());
+			
+			openedFileHash = codeEditor.getText().hashCode();
+			
+			saveFile.setEnabled(true);
+			codeEditor.setEditable(true);
+			deleteFile.setEnabled(true);
+		});
 	}
 	
 	////////////////////////// Utility Methods //////////////////////////
 	
 	@Override
 	public boolean handleFile(File file) {
-		currentProject = Project.fromNBT(file.getData());
-		
-		for(String fileName : currentProject.getAllFileNames()) {
-			files.addItem(fileName);
-		}
-		
-		saveLocation = file;
-		setProjectButtons(true);
-		
+		unloadProject(() -> {
+			currentProject = Project.loadProject(new BlueJResourceLocation("files", "root", file.getParent().getPath()));
+			
+			for(String fileName : currentProject.getAllFileNames()) {
+				files.addItem(fileName);
+			}
+			
+			setProjectButtons(true);
+		});
 		return true;
 	}
 	
-	public void unloadProject(Runnable runnable) {
-		// ask to save if project is currently opened
-		if(currentProject != null) {
+	public void unloadFile(Runnable runnable) {
+		if(openedFile != null && codeEditor.getText().hashCode() != openedFileHash) {
 			Confirmation shouldSave = new Confirmation("Do you want to save before exiting?");
 			shouldSave.setPositiveListener((c, button) -> {
-				saveProject();
-				currentProject = null;
-				openedFile = null;
-				saveLocation = null;
-				
-				files.setItems(new ArrayList<String>());
-				codeEditor.setText("");
-				
-				setProjectButtons(false);
-				codeEditor.setEditable(false);
-				deleteFile.setEnabled(false);
-				
+				saveOpenedFile();
 				runnable.run();
 			});
 			shouldSave.setNegativeListener((c, button) -> {
@@ -287,23 +255,36 @@ public class BlueJ extends Application {
 		}
 	}
 	
-	public void saveProject() {
-		if(openedFile != null) {
-			currentProject.getFile(openedFile).setCode(codeEditor.getText());
+	public void unloadProject(Runnable runnable) {
+		unloadFile(() -> {
+			currentProject = null;
+			openedFile = null;
+			
+			files.setItems(new ArrayList<String>());
+			codeEditor.setText("");
+			
+			setProjectButtons(false);
+			codeEditor.setEditable(false);
+			deleteFile.setEnabled(false);
+			
+			runnable.run();
+		});
+	}
+	
+	public void saveOpenedFile() {
+		if(openedFile != null && codeEditor.getText().hashCode() != openedFileHash) {
+			openedFile.setCode(codeEditor.getText());
+			currentProject.getResolvedResourceLocation().getFile(openedFile.getName()).setData(openedFile.toNBT());
+			openedFileHash = codeEditor.getText().hashCode();
 		}
-		NBTTagCompound data = currentProject.toNBT();
-		saveLocation.setData(data);
-		Message msg = new Message("Project saved to " + saveLocation.getPath());
-		msg.setTitle("Saved");
-		openDialog(msg);
 	}
 
 	public void setProjectButtons(boolean enabled) {
-		saveProject.setEnabled(enabled);
 		newFile.setEnabled(enabled);
 		files.setEnabled(enabled);
 		run.setEnabled(enabled);
 		stop.setEnabled(enabled);
+		exportProject.setEnabled(enabled);
 	}
 	
 	// TODO load layout settings

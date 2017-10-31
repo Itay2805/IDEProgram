@@ -2,6 +2,8 @@ package me.itay.idemodthingy.programs.bluej;
 
 import me.itay.idemodthingy.api.IDELanguageManager;
 import me.itay.idemodthingy.api.IDELanguageSupport;
+import me.itay.idemodthingy.programs.bluej.resources.BlueJResolvedResloc;
+import me.itay.idemodthingy.programs.bluej.resources.BlueJResourceLocation;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class ProjectFile {
@@ -19,7 +21,14 @@ public class ProjectFile {
 		this.code = code;
 		this.language = language;
 	}
-
+	
+	public void save(BlueJResourceLocation baseFolder) {
+		BlueJResolvedResloc resloc = baseFolder.resolve();
+		BlueJResolvedResloc file = resloc.getFile(name);
+		if(!file.exists()) file.create();
+		file.setData(toNBT());
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -58,6 +67,7 @@ public class ProjectFile {
 		file.setString(FILENAME_TAG, name);
 		file.setString(CODE_TAG, code);
 		file.setString(LANGUAGE_TAG, language.getName());
+		file.setString(Project.TYPE_TAG, Project.TYPE_CODE_FILE);
 		return file;
 	}
 	

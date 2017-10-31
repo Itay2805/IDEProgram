@@ -1,5 +1,7 @@
 package me.itay.idemodthingy.programs.bluej.resources;
 
+import me.itay.idemodthingy.programs.bluej.resources.types.BlueJFileSystemResloc;
+
 public class BlueJReslocResolver {
 	
 	public static BlueJResolvedResloc resolveBlueJResourceLocation(BlueJResourceLocation resloc) {

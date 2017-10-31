@@ -5,6 +5,7 @@ import net.minecraft.nbt.NBTTagCompound;
 public interface BlueJResolvedResloc {
 	
 	// maybe more
+	String name();
 	boolean exists();
 	void create();
 	void mkdir();
@@ -13,5 +14,8 @@ public interface BlueJResolvedResloc {
 	NBTTagCompound getData();
 	boolean isFile();
 	boolean isFolder();
+	String[] listFiles();
+	String[] listFolders();
+	BlueJResolvedResloc getFile(String name);
 	
 }
