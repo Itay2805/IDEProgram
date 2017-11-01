@@ -109,7 +109,7 @@ public final class ComponentBuilder {
                                 this.iwidth,
                                 this.iheight,
                                 this.name,
-                                new BlueJResourceLocation("button", this.context.toString(), this.name));
+                                new BlueJResourceLocation("button", this.context.getResourceLocation(), this.name));
                     }else{
                         return new Button(
                                 this.x,
@@ -124,7 +124,7 @@ public final class ComponentBuilder {
                                 this.iwidth,
                                 this.iheight,
                                 this.name,
-                                new BlueJResourceLocation("button", context.toString(), this.name));
+                                new BlueJResourceLocation("button", context.getResourceLocation(), this.name));
                     }
                 }
             }else if(type.toLowerCase().equals("comboboxlist")){
@@ -137,7 +137,7 @@ public final class ComponentBuilder {
                                 this.width,
                                 (String[])this.additionalParams.toArray(),
                                 this.name,
-                                new BlueJResourceLocation("comboboxlist", context.toString(), this.name)
+                                new BlueJResourceLocation("comboboxlist", context.getResourceLocation(), this.name)
                         );
                     }else{
                         return new ComboBox.List<>(
@@ -147,7 +147,7 @@ public final class ComponentBuilder {
                                 this.width,
                                 (String[])this.additionalParams.toArray(),
                                 this.name,
-                                new BlueJResourceLocation("comboboxlist", context.toString(), this.name)
+                                new BlueJResourceLocation("comboboxlist", context.getResourceLocation(), this.name)
                         );
                     }
                 }

@@ -1,5 +1,6 @@
 package me.itay.idemodthingy.programs.bluej;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import com.mrcrayfish.device.api.app.Application;
@@ -79,6 +80,7 @@ public class BlueJ extends Application {
 		openProject.setClickListener(this::loadProjectHandler);
 		exportProject = new Button(getNextBtnPos(), 1, Icon.EXPORT);
 		exportProject.setToolTip("Export Project", "Export the project as a runnable");
+		exportProject.setClickListener(this::archiveProjectHandler);
 		exportProject.setEnabled(false);
 		
 		addComponent(newProject);
@@ -176,8 +178,21 @@ public class BlueJ extends Application {
 		});
 	}
 	
-	private void saveFileHandler(Component c, int button) {
-		saveOpenedFile();
+	private void archiveProjectHandler(Component c, int button) {
+		NBTTagCompound tag = currentProject.archive();
+		// TODO: Change from Runner to a newer once we have newer one
+		SaveFile file = new SaveFile(this, tag);
+		file.setResponseHandler((success, f) -> {
+			try {
+				Field field = File.class.getDeclaredField("openingApp");
+				field.setAccessible(true);
+				field.set(f, "idemodthingy:dynamicapp");
+			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
+			return true;
+		});
+		openDialog(file);
 	}
 	
 	////////////////////////// File Buttons Handlers //////////////////////////
@@ -202,6 +217,10 @@ public class BlueJ extends Application {
 		files.setSelectedIndex(-1);
 		currentProject.removeFile(openedFile.getName());
 		openedFile = null;
+	}
+	
+	private void saveFileHandler(Component c, int button) {
+		saveOpenedFile();
 	}
 	
 	////////////////////////// Other Handlers //////////////////////////

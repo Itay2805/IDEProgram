@@ -15,6 +15,7 @@ import me.itay.idemodthingy.languages.js.IDELanguageRuntimeJS;
 import me.itay.idemodthingy.languages.kotlin.IDELanguageKotlin;
 import me.itay.idemodthingy.languages.text.IDELanguageText;
 import me.itay.idemodthingy.programs.bluej.BlueJ;
+import me.itay.idemodthingy.programs.dynamicapp.DynamicApp;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -50,7 +51,8 @@ public class IDEModProgramThingy
     	IDELanguageSupport kotlin = new IDELanguageSupport("kotlin", new IDELanguageKotlin(), new IDELanguageKotlin());
     	IDELanguageManager.addSupport("kotlin", kotlin);
     	
-    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:ide"), BlueJ.class);
+    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:bluej"), BlueJ.class);
+    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:dynamicapp"), DynamicApp.class);
     	
 //    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:ide"), OLDIDE.class);
 //    	ApplicationManager.registerApplication(new ResourceLocation("idemodthingy:runtime"), Runner.class);

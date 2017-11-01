@@ -3,8 +3,12 @@ package me.itay.idemodthingy.programs.bluej;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.mrcrayfish.device.api.io.File;
+import com.mrcrayfish.device.api.io.Folder;
+
 import me.itay.idemodthingy.programs.bluej.resources.BlueJResolvedResloc;
 import me.itay.idemodthingy.programs.bluej.resources.BlueJResourceLocation;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.common.util.Constants.NBT;
 
 public class Project {
@@ -39,14 +43,28 @@ public class Project {
 		return files.keySet();
 	}
 	
+	public NBTTagCompound archive() {
+		return getResolvedResourceLocation().getData();
+	}
+	
+	public static Project dearchive(NBTTagCompound data) {
+		Folder folder = Folder.fromTag("virtual_directory", data);
+		Project project = new Project();
+		for(File f : folder.getFiles()) {
+			if(f.getData().hasKey(TYPE_TAG, NBT.TAG_STRING) && f.getData().getString(TYPE_TAG).equals(TYPE_CODE_FILE)) {
+				project.files.put(f.getName(), ProjectFile.fromNBT(f.getData()));
+			}
+		}
+		return project;
+	}
+	
 	public static Project loadProject(BlueJResourceLocation resloc) {
 		BlueJResolvedResloc resolved = resloc.resolve();
-//		NBTTagCompound projectData = resolved.getData();
 		Project proj = new Project();
 		proj.path = resloc;
 		for(String file : resolved.listFiles()) {
 			BlueJResolvedResloc f = resolved.getFile(file);
-			if(f.getData().hasKey(TYPE_TAG, NBT.TAG_STRING) && f.getData().getString("type").equals(TYPE_CODE_FILE)) {
+			if(f.getData().hasKey(TYPE_TAG, NBT.TAG_STRING) && f.getData().getString(TYPE_TAG).equals(TYPE_CODE_FILE)) {
 				proj.files.put(f.name(), ProjectFile.fromNBT(f.getData()));
 			}
 		}
@@ -64,6 +82,11 @@ public class Project {
 	
 	public BlueJResolvedResloc getResolvedResourceLocation() {
 		return resolved;
+	}
+
+	@Override
+	public String toString() {
+		return "Project [name=" + name + ", path=" + path + ", resolved=" + resolved + ", files=" + files + "]";
 	}
 	
 }

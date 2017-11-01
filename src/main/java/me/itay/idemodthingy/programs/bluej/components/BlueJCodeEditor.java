@@ -29,8 +29,8 @@ public class BlueJCodeEditor extends Component {
 	private int from;
 	private int maxLines;
 	
-	private int cursorX, cursorY, cursorColor = Color.WHITE.getRGB();
-	private int backgroundColor = 0x1E1E1E;
+	private int cursorX, cursorY, cursorColor = Color.LIGHT_GRAY.getRGB();
+	private int backgroundColor = new Color(0x1E1E1E).getRGB();
 	private Timer cursorTimer = new Timer();
 	private boolean cursorState = false;
 
@@ -88,7 +88,7 @@ public class BlueJCodeEditor extends Component {
 		if(!visible) return;
 		
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		Gui.drawRect(xPosition, yPosition, xPosition + width, yPosition + height, new Color(0x1E1E1E).getRGB());
+		Gui.drawRect(xPosition, yPosition, xPosition + width, yPosition + height, backgroundColor);
 		
 		FontRenderer font = Minecraft.getMinecraft().fontRendererObj;
 		
@@ -124,7 +124,7 @@ public class BlueJCodeEditor extends Component {
 			if(cursorState) {
 				int X = font.getStringWidth(getCurrentLine().substring(0, cursorX).replace("\t", "   "));
 				int Y = (cursorY - from) * font.FONT_HEIGHT;
-				font.drawString("|", 2 + xPosition + X, 2 + yPosition + Y, Color.GRAY.getRGB());
+				font.drawString("|", 2 + xPosition + X, 2 + yPosition + Y, cursorColor);
 			}
 		}
 		

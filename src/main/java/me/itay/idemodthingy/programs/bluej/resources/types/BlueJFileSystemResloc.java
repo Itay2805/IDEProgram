@@ -95,6 +95,8 @@ public class BlueJFileSystemResloc implements BlueJResolvedResloc {
 	public NBTTagCompound getData() {
 		if(isFile()) {
 			return file.getData();
+		}else if(isFolder()) {
+			return folder.toTag();
 		}
 		return null;
 	}
