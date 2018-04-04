@@ -10,7 +10,7 @@ import javax.script.ScriptEngineManager;
 import com.mrcrayfish.device.api.app.Application;
 
 import me.itay.idemodthingy.api.IDELanguageRuntime;
-import me.itay.idemodthingy.programs.OLDIDE.ProjectFile;
+import me.itay.idemodthingy.programs.bluej.ProjectFile;
 
 import static me.itay.idemodthingy.util.StringUtil.convertStreamToString;
 
@@ -29,16 +29,19 @@ public class IDELanguageRuntimeJS implements IDELanguageRuntime {
 	@Override
 	public String exe(Application app, PrintStream out, TreeMap<String, ProjectFile> files) {
 		ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
-		try {
-			engine.put("runtime", new RuntimeFeatures(app, out, files));
-			engine.eval(bootstrap);
-			engine.eval(opengl);
-			System.out.println(files.firstEntry());
-			if(!files.isEmpty()) engine.eval(files.firstEntry().getValue().code);
-			return null;
-		} catch (Throwable e) {
-			return e.getMessage();
+		if(engine != null) {
+			try {
+				engine.put("runtime", new RuntimeFeatures(app, out, files));
+				engine.eval(bootstrap);
+				engine.eval(opengl);
+				System.out.println(files.firstEntry());
+				if (!files.isEmpty()) engine.eval(files.firstEntry().getValue().getCode());
+				return null;
+			} catch (Throwable e) {
+				return e.getMessage();
+			}
 		}
+		return null;
 	}
 	
 	

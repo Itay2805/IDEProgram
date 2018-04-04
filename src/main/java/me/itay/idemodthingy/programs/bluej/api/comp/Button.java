@@ -1,6 +1,6 @@
 package me.itay.idemodthingy.programs.bluej.api.comp;
 
-import com.mrcrayfish.device.api.app.Icon;
+import com.mrcrayfish.device.api.app.Icons;
 import me.itay.idemodthingy.programs.bluej.resources.BlueJResourceLocation;
 import net.minecraft.util.ResourceLocation;
 
@@ -21,25 +21,25 @@ public class Button extends com.mrcrayfish.device.api.app.component.Button imple
         this.resloc = resloc;
     }
 
-    public Button(int left, int top, Icon icon, String name, BlueJResourceLocation resloc) {
+    public Button(int left, int top, Icons icon, String name, BlueJResourceLocation resloc) {
         super(left, top, icon);
         this.name = name;
         this.resloc = resloc;
     }
 
-    public Button(int left, int top, int buttonWidth, int buttonHeight, Icon icon, String name, BlueJResourceLocation resloc) {
+    public Button(int left, int top, int buttonWidth, int buttonHeight, Icons icon, String name, BlueJResourceLocation resloc) {
         super(left, top, buttonWidth, buttonHeight, icon);
         this.name = name;
         this.resloc = resloc;
     }
 
-    public Button(int left, int top, String text, Icon icon, String name, BlueJResourceLocation resloc) {
+    public Button(int left, int top, String text, Icons icon, String name, BlueJResourceLocation resloc) {
         super(left, top, text, icon);
         this.name = name;
         this.resloc = resloc;
     }
 
-    public Button(int left, int top, int buttonWidth, int buttonHeight, String text, Icon icon, String name, BlueJResourceLocation resloc) {
+    public Button(int left, int top, int buttonWidth, int buttonHeight, String text, Icons icon, String name, BlueJResourceLocation resloc) {
         super(left, top, buttonWidth, buttonHeight, text, icon);
         this.name = name;
         this.resloc = resloc;

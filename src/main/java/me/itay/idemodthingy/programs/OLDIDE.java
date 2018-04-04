@@ -120,7 +120,7 @@ public class OLDIDE extends Application {
 		load = new Button((80 + 120) + BOUNDS_SIZE * 4, BOUNDS_SIZE, 30, BUTTONS_HEIGHT, "Load");
 		
 		filesList = new ItemList<>(BOUNDS_SIZE, BOUNDS_SIZE * 2 + BUTTONS_HEIGHT, 80, ((HEIGHT - (BOUNDS_SIZE * 3 + BUTTONS_HEIGHT)) / 15) + 1);
-		text = new IDETextArea(80 + 2 * BOUNDS_SIZE, BOUNDS_SIZE * 2 + BUTTONS_HEIGHT, WIDTH - (BOUNDS_SIZE * 3 + 80), HEIGHT - (BOUNDS_SIZE * 3 + BUTTONS_HEIGHT), new IDELanguageText());
+//		text = new IDETextArea(80 + 2 * BOUNDS_SIZE, BOUNDS_SIZE * 2 + BUTTONS_HEIGHT, WIDTH - (BOUNDS_SIZE * 3 + 80), HEIGHT - (BOUNDS_SIZE * 3 + BUTTONS_HEIGHT), this.);
 		
 		text.setEditable(false);
 		
@@ -135,7 +135,7 @@ public class OLDIDE extends Application {
 		
 		OLDIDE curr = this;
 
-		newFile.setClickListener((c, mouseButton)-> {
+		newFile.setClickListener((x, y, b)-> {
 			Input input = new Input("File name");
 			input.setResponseHandler((success, e)->{
 				if(files.containsKey(e)) {
@@ -153,7 +153,7 @@ public class OLDIDE extends Application {
 			curr.openDialog(input);
 		});
 		
-		deleteFile.setClickListener((c, mouseButton)-> {
+		deleteFile.setClickListener((x, y, b)-> {
 			ProjectFile f = files.get(filesList.getSelectedItem());
 			filesList.removeItem(filesList.getSelectedIndex());
 			if(f == currentFile) {
@@ -171,7 +171,7 @@ public class OLDIDE extends Application {
 			setCurrentFile(files.get(filesList.getSelectedItem()));
 		});
 		
-		run.setClickListener((c, mouseButton)->{
+		run.setClickListener((x, y, b)->{
 			if(currentFile != null) {
 				currentFile.code = text.getText();
 			}
@@ -182,7 +182,7 @@ public class OLDIDE extends Application {
 			}else {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				PrintStream stream = new PrintStream(baos);
-				String error = files.firstEntry().getValue().support.getRuntime().exe(curr, stream, files);
+				/*String error = files.firstEntry().getValue().support.getRuntime().exe(curr, stream, files);
 				if(error != null) {
 					Message msg = new Message(error);
 					msg.setTitle("Error");
@@ -196,7 +196,7 @@ public class OLDIDE extends Application {
 					Message msg = new Message(output);
 					msg.setTitle("Output");
 					curr.openDialog(msg);
-				}
+				}*/
 			}
 		});
 		
@@ -218,7 +218,7 @@ public class OLDIDE extends Application {
 			}
 		});
 		
-		load.setClickListener((c, mouseButton)-> {
+		load.setClickListener((x, y, b)-> {
 			OpenFile file = new OpenFile(curr);
 			file.setResponseHandler((success, e)-> {
 					loadProject(e);
@@ -227,7 +227,7 @@ public class OLDIDE extends Application {
 			curr.openDialog(file);
 		});
 		
-		save.setClickListener((c, mouseButton)-> {
+		save.setClickListener((x, y, b)-> {
 			currentFile.code = text.getText();
 
 			NBTTagCompound data = new NBTTagCompound();

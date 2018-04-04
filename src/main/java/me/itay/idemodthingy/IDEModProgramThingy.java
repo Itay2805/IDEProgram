@@ -20,12 +20,16 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Mod(modid = IDEModProgramThingy.MODID, version = IDEModProgramThingy.VERSION)
 public class IDEModProgramThingy
 {
     public static final String MODID = "idemodthingy";
     public static final String VERSION = "0.5.0";
+
+    public static final Logger LOGGER = LogManager.getLogger("ideaddon");
     
     @EventHandler
     public void init(FMLInitializationEvent event)
@@ -42,8 +46,11 @@ public class IDEModProgramThingy
 	    	temp = null;
 	    	
 	    	IDELanguageSupport js = new IDELanguageSupport("JavaScript", new IDELanguageJavaScript(), new IDELanguageRuntimeJS());
-	    	IDELanguageManager.addSupport("JavaScript", js);			
+	    	IDELanguageManager.addSupport("JavaScript", js);
 		}
+
+		IDELanguageSupport js = new IDELanguageSupport("JavaScript", new IDELanguageJavaScript(), new IDELanguageRuntimeJS());
+		IDELanguageManager.addSupport("JavaScript", js);
 		
     	IDELanguageSupport text = new IDELanguageSupport("Text", new IDELanguageText(), null);
     	IDELanguageManager.addSupport("Text", text);

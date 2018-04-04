@@ -15,24 +15,24 @@ import me.itay.idemodthingy.api.IDELanguageManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 
-public class AddFileDialog extends Dialog {
+public class AddProjectDialog extends Dialog {
 	
 	private String messageText = null;
 	private String inputText = "";
 	private String positiveText = "Okay";
 	private String negativeText = "Cancel";
 
-	private ResponseHandler<ProjectFile> responseListener;
+	private ResponseHandler<Project> responseListener;
 
 	private TextField textFieldInput;
 	private ComboBox.List<String> languages;
 	private Button buttonPositive;
 	private Button buttonNegative;
 
-	public AddFileDialog() {
+	public AddProjectDialog() {
 	}
 
-	public AddFileDialog(String messageText) {
+	public AddProjectDialog(String messageText) {
 		this.messageText = messageText;
 	}
 
@@ -71,11 +71,11 @@ public class AddFileDialog extends Dialog {
 		int positiveWidth = Minecraft.getMinecraft().fontRendererObj.getStringWidth(positiveText);
 		buttonPositive = new Button(getWidth() - positiveWidth - 15, getHeight() - 20, positiveText);
 		buttonPositive.setSize(positiveWidth + 10, 15);
-		buttonPositive.setClickListener((c, mouseButton) -> {
+		buttonPositive.setClickListener((x, y, b) -> {
 			if (!textFieldInput.getText().isEmpty()) {
 				boolean close = true;
 				if (responseListener != null) {
-					close = responseListener.onResponse(true, new ProjectFile(textFieldInput.getText().trim(), "", IDELanguageManager.getSupport().get(languages.getSelectedItem())));
+					close = responseListener.onResponse(true, new Project(textFieldInput.getText(), IDELanguageManager.getSupport().get(languages.getSelectedItem()).getHighlight()));
 				}
 				if (close)
 					close();
@@ -87,7 +87,7 @@ public class AddFileDialog extends Dialog {
 		buttonNegative = new Button(getWidth() - positiveWidth - negativeWidth - 15 - 15, getHeight() - 20,
 				negativeText);
 		buttonNegative.setSize(negativeWidth + 10, 15);
-		buttonNegative.setClickListener((c, mouseButton) -> close());
+		buttonNegative.setClickListener((x, y, b) -> close());
 		this.addComponent(buttonNegative);
 	}
 
@@ -135,7 +135,7 @@ public class AddFileDialog extends Dialog {
 	 *
 	 * @param responseListener
 	 */
-	public void setResponseHandler(ResponseHandler<ProjectFile> responseListener) {
+	public void setResponseHandler(ResponseHandler<Project> responseListener) {
 		this.responseListener = responseListener;
 	}
 }

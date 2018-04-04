@@ -1,11 +1,15 @@
 package me.itay.idemodthingy.programs.bluej;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
 import com.mrcrayfish.device.api.io.File;
 import com.mrcrayfish.device.api.io.Folder;
 
+import me.itay.idemodthingy.api.IDELanguageManager;
+import me.itay.idemodthingy.api.IDELanguageRuntime;
+import me.itay.idemodthingy.programs.bluej.api.SyntaxHighlighter;
 import me.itay.idemodthingy.programs.bluej.resources.BlueJResolvedResloc;
 import me.itay.idemodthingy.programs.bluej.resources.BlueJResourceLocation;
 import net.minecraft.nbt.NBTTagCompound;
@@ -20,10 +24,24 @@ public class Project {
 	private String name;
 	private BlueJResourceLocation path;
 	private BlueJResolvedResloc resolved;
-
+	private SyntaxHighlighter projectLanguage;
+	private IDELanguageRuntime runtime;
 	private TreeMap<String, ProjectFile> files = new TreeMap<>();
-	
-	public void addFile(ProjectFile file) {
+
+	public Project(String name, SyntaxHighlighter language){
+	    this.name = name;
+	    this.projectLanguage = language;
+    }
+
+	public SyntaxHighlighter getProjectLanguage() {
+		return projectLanguage;
+	}
+
+    public IDELanguageRuntime getRuntime() {
+        return runtime;
+    }
+
+    public void addFile(ProjectFile file) {
 		files.put(file.getName(), file);
 		BlueJResolvedResloc resolved = getResolvedResourceLocation().getFile(file.getName());
 		resolved.create();
@@ -49,9 +67,12 @@ public class Project {
 	
 	public static Project dearchive(NBTTagCompound data) {
 		Folder folder = Folder.fromTag("virtual_directory", data);
-		Project project = new Project();
+		String name = data.getString("name");
+		String language = data.getString("language");
+        SyntaxHighlighter lang = IDELanguageManager.getSupport().get(language).getHighlight();
+		Project project = new Project(name, lang);
 		for(File f : folder.getFiles()) {
-			if(f.getData().hasKey(TYPE_TAG, NBT.TAG_STRING) && f.getData().getString(TYPE_TAG).equals(TYPE_CODE_FILE)) {
+			if(Objects.requireNonNull(f.getData()).hasKey(TYPE_TAG, NBT.TAG_STRING) && f.getData().getString(TYPE_TAG).equals(TYPE_CODE_FILE)) {
 				project.files.put(f.getName(), ProjectFile.fromNBT(f.getData()));
 			}
 		}
@@ -60,7 +81,7 @@ public class Project {
 	
 	public static Project loadProject(BlueJResourceLocation resloc) {
 		BlueJResolvedResloc resolved = resloc.resolve();
-		Project proj = new Project();
+		Project proj = dearchive(resolved.getData());
 		proj.path = resloc;
 		for(String file : resolved.listFiles()) {
 			BlueJResolvedResloc f = resolved.getFile(file);

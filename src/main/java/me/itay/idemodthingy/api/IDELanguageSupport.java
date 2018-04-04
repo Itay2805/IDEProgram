@@ -1,12 +1,14 @@
 package me.itay.idemodthingy.api;
 
+import me.itay.idemodthingy.programs.bluej.api.SyntaxHighlighter;
+
 public class IDELanguageSupport {
 	
-	private IDELanguageHighlight highlight;
+	private SyntaxHighlighter highlight;
 	private IDELanguageRuntime runtime;
 	private String name;
 	
-	public IDELanguageSupport(String name, IDELanguageHighlight highlight, IDELanguageRuntime runtime) {
+	public IDELanguageSupport(String name, SyntaxHighlighter highlight, IDELanguageRuntime runtime) {
 		this.highlight = highlight;
 		this.runtime = runtime;
 		this.name = name;
@@ -16,7 +18,7 @@ public class IDELanguageSupport {
 		return name;
 	}
 	
-	public IDELanguageHighlight getHighlight() {
+	public SyntaxHighlighter getHighlight() {
 		return highlight;
 	}
 	

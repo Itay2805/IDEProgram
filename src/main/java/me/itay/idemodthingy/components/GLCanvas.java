@@ -9,8 +9,8 @@ import com.mrcrayfish.device.core.Laptop;
 import me.itay.idemodthingy.opengl.GL;
 import me.itay.idemodthingy.opengl.GLContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
@@ -52,7 +52,7 @@ public class GLCanvas extends Component {
 	
 	protected static void drawRectWithFullTexture(double x, double y, float u, float v, int width, int height) {
 		Tessellator tessellator = Tessellator.getInstance();
-		VertexBuffer buffer = tessellator.getBuffer();
+		BufferBuilder buffer = tessellator.getBuffer();
 		buffer.begin(7, DefaultVertexFormats.POSITION_TEX);
 		buffer.pos(x, y + height, 0).tex(0, 1).endVertex();
 		buffer.pos(x + width, y + height, 0).tex(1, 1).endVertex();

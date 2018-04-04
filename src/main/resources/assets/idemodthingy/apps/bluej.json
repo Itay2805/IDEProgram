@@ -1,0 +1,8 @@
+{
+  "name": "BlueJ IDE",
+  "author": "Itay and Alex",
+  "description": "${desc}",
+  "version": "1.0",
+  "icon": "idemodthingy:textures/icon/bluej.png",
+  "screenshots": []
+}

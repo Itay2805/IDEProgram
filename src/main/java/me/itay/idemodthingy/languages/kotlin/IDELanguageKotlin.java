@@ -1,15 +1,6 @@
 package me.itay.idemodthingy.languages.kotlin;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.URL;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -18,14 +9,18 @@ import java.util.TreeMap;
 
 import com.mrcrayfish.device.api.app.Application;
 
-import me.itay.idemodthingy.IDEModProgramThingy;
-import me.itay.idemodthingy.api.IDELanguageHighlight;
 import me.itay.idemodthingy.api.IDELanguageRuntime;
-import me.itay.idemodthingy.components.IDETextArea;
-import me.itay.idemodthingy.programs.OLDIDE;
-import net.minecraft.util.ResourceLocation;
+import me.itay.idemodthingy.programs.bluej.Project;
+import me.itay.idemodthingy.programs.bluej.ProjectFile;
+import me.itay.idemodthingy.programs.bluej.api.Problem;
+import me.itay.idemodthingy.programs.bluej.api.SyntaxHighlighter;
+import me.itay.idemodthingy.programs.bluej.api.tokens.Token;
 
-public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlight {
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
+public class IDELanguageKotlin implements IDELanguageRuntime, SyntaxHighlighter {
 
     private static final String WITH_DELIMITER = "((?<=%1$s)|(?=%1$s))";
     private static final String[] DELIMITERS = { "\\s", "\\p{Punct}", "\\p{Digit}+"  };
@@ -40,108 +35,34 @@ public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlig
     }
 
     @Override
-    public String exe(Application app, PrintStream out, TreeMap<String, OLDIDE.ProjectFile> code) {
-        try{
-            ClassLoader classloader = this.getClass().getClassLoader();
-            String cp = "assets/idemodthingy/kotlin/libexec/bin/kotlinc-jvm";
-            URL compiler = classloader.getResource(cp);
-            File outdir = new File(new ResourceLocation(IDEModProgramThingy.MODID, "kotlin/out").getResourcePath());
-            File outfile = new File(outdir.getAbsolutePath() + "/out.jar");
-            List<String> filePaths = new ArrayList<>();
-            if(outdir.exists()){
-                if(outdir.isDirectory()){
-                    writeAndCompile(filePaths, outdir, code);
-                }else{
-                    if(outdir.mkdir()){
-                        writeAndCompile(filePaths, outdir, code);
-                    }else{
-                        throw new IOException(String.format("Cannot create directory %s. Don't know why. Talk to Alex about it.", outdir.getAbsolutePath()));
-                    }
-                }
-            }else if(outdir.mkdir()){
-                writeAndCompile(filePaths, outdir, code);
-            }else{
-                throw new IOException(String.format("Cannot create directory %s. Don't know why. Talk to Alex about it.", outdir.getAbsolutePath()));
-            }
-
-            List<String> commands = new ArrayList<>();
-            {
-                if(compiler != null){
-                    commands.add(Paths.get(compiler.toURI()).toFile().getAbsolutePath());
-                    commands.addAll(filePaths);
-                    commands.add("-d");
-                    commands.add(outfile.getAbsolutePath());
+    public String exe(Application app, PrintStream out, TreeMap<String, ProjectFile> code) {
+        ScriptEngine engine = new ScriptEngineManager().getEngineByName("kotlin");
+        if(engine != null){
+            if(!code.isEmpty()) {
+                try {
+                    engine.eval(code.firstEntry().getValue().getCode());
+                    return null;
+                } catch (ScriptException e) {
+                    return e.getMessage();
                 }
             }
-            ProcessBuilder pb = new ProcessBuilder(commands);
-            pb.start();
-
-            commands.clear();
-            String rp = "assets/idemodthingy/kotlin/libexec/bin/kotlin";
-            URL runner = classloader.getResource(rp);
-            {
-                if(runner != null) {
-                    commands.add(Paths.get(runner.toURI()).toFile().getAbsolutePath());
-                    commands.add(outfile.getAbsolutePath());
-                }
-            }
-            pb = new ProcessBuilder(commands);
-            Process p = pb.start();
-            p.waitFor();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line;
-            StringBuilder sb = new StringBuilder();
-            while((line = br.readLine()) != null){
-                sb.append(line).append("\n");
-            }
-            return sb.toString();
-        }catch(Exception e){
-            String message = "";
-            message+="Build failed with the following errors:\n"
-                    +e.getMessage()
-                    +"\n"
-                    +"See console for more information.";
-            System.err.println(message);
-            e.printStackTrace();
-            return message;
         }
+        return null;
     }
 
-    private void writeAndCompile(List<String> filePaths, File outdir, TreeMap<String, OLDIDE.ProjectFile> code) throws IOException{
-        for(OLDIDE.ProjectFile projectFile : code.values()) {
-            File file = new File(String.format("%s/%s.kt", outdir.getAbsolutePath(), projectFile.fileName));
-            System.out.println(file.getAbsolutePath());
-            if(!file.exists()) {
-                if(file.createNewFile()) {
-                    BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-                    code.forEach((s, pf) -> {
-                        if (pf == projectFile) {
-                            try {
-                                bw.write(pf.code);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }finally{
-                                try {
-                                    bw.flush();
-                                    bw.close();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                    });
-                    bw.close();
-                }
-            }else{
-                throw new FileAlreadyExistsException(
-                        String.format(
-                                "%s already exists. This should not be happening like at all! " +
-                                        "If this is happening, tell Alex to strap up!",
-                                file.getAbsolutePath()));
-            }
-            filePaths.add(file.getAbsolutePath());
-        }
+    @Override
+    public String getName() {
+        return null;
+    }
+
+    @Override
+    public List<Token> parse(Project project, ProjectFile currentFile) {
+        return null;
+    }
+
+    @Override
+    public List<Problem> getProblems(ProjectFile file) {
+        return null;
     }
 
     @Override
@@ -149,13 +70,11 @@ public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlig
 
     }
 
-    @Override
     public String[] tokenize(String text) {
         return text.split(String.format(WITH_DELIMITER, "(" + DELIMITER + ")"));
     }
 
     private List<String> previousTokens = new ArrayList<>();
-    @Override
     public int getKeywordColor(String text) {
         int color = 0xffffff;
         switch(text){
@@ -341,10 +260,5 @@ public class IDELanguageKotlin implements IDELanguageRuntime, IDELanguageHighlig
             previousTokens.add(text);
         }
         return color;
-    }
-
-    @Override
-    public void errorCheck(IDETextArea area, String code) {
-
     }
 }

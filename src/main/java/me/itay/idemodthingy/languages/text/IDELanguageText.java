@@ -1,29 +1,32 @@
 package me.itay.idemodthingy.languages.text;
 
-import java.awt.Color;
+import java.util.List;
 
-import me.itay.idemodthingy.api.IDELanguageHighlight;
-import me.itay.idemodthingy.components.IDETextArea;
+import me.itay.idemodthingy.programs.bluej.Project;
+import me.itay.idemodthingy.programs.bluej.ProjectFile;
+import me.itay.idemodthingy.programs.bluej.api.Problem;
+import me.itay.idemodthingy.programs.bluej.api.SyntaxHighlighter;
+import me.itay.idemodthingy.programs.bluej.api.tokens.Token;
 
-public class IDELanguageText implements IDELanguageHighlight {
+public class IDELanguageText implements SyntaxHighlighter {
 
 	@Override
-	public String[] tokenize(String text) {
-		return new String[] { text };
+	public String getName() {
+		return null;
 	}
 
 	@Override
-	public int getKeywordColor(String text) {
-		return Color.WHITE.getRGB();
+	public List<Token> parse(Project project, ProjectFile currentFile) {
+		return null;
+	}
+
+	@Override
+	public List<Problem> getProblems(ProjectFile file) {
+		return null;
 	}
 
 	@Override
 	public void reset() {
-		
-	}
-
-	@Override
-	public void errorCheck(IDETextArea area, String code) {
 		
 	}
 	

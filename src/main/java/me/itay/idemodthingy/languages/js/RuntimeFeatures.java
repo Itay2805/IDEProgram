@@ -13,7 +13,7 @@ import com.mrcrayfish.device.api.app.component.TextField;
 import com.mrcrayfish.device.api.app.listener.ClickListener;
 
 import me.itay.idemodthingy.components.GLCanvas;
-import me.itay.idemodthingy.programs.OLDIDE.ProjectFile;
+import me.itay.idemodthingy.programs.bluej.ProjectFile;
 import me.itay.idemodthingy.programs.Runner;
 
 public class RuntimeFeatures {
@@ -30,8 +30,8 @@ public class RuntimeFeatures {
 
 	public String getJSFile(String file) {
 		ProjectFile f = files.get(file);
-		if(f.support.getRuntime() instanceof IDELanguageRuntimeJS) {
-			return f.code;
+		if(f.getParentProject().getRuntime() instanceof IDELanguageRuntimeJS) {
+			return f.getCode();
 		}
 		return null;
 	}
@@ -84,12 +84,7 @@ public class RuntimeFeatures {
 	
 	public void button_setClickListener(Object btn, Runnable mirror) {
 		if(btn instanceof Button) {			
-			((Button)btn).setClickListener(new ClickListener() {
-				@Override
-				public void onClick(Component c, int mouseButton) {
-					mirror.run();
-				}
-			});
+			((Button)btn).setClickListener((mouseX, mouseY, mouseButton) -> mirror.run());
 		}else {
 			throw new RuntimeException("Not a native button");
 		}

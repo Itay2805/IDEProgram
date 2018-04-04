@@ -2,13 +2,13 @@ package me.itay.idemodthingy.programs.bluej;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import com.mrcrayfish.device.api.app.Application;
-import com.mrcrayfish.device.api.app.Component;
 import com.mrcrayfish.device.api.app.Dialog.Confirmation;
 import com.mrcrayfish.device.api.app.Dialog.OpenFile;
 import com.mrcrayfish.device.api.app.Dialog.SaveFile;
-import com.mrcrayfish.device.api.app.Icon;
+import com.mrcrayfish.device.api.app.Icons;
 import com.mrcrayfish.device.api.app.component.Button;
 import com.mrcrayfish.device.api.app.component.ItemList;
 import com.mrcrayfish.device.api.io.File;
@@ -72,13 +72,13 @@ public class BlueJ extends Application {
 		
 		resetLayout();
 		
-		newProject = new Button(getNextBtnPos(), 1, Icon.NEW_FOLDER);
+		newProject = new Button(getNextBtnPos(), 1, Icons.NEW_FOLDER);
 		newProject.setToolTip("New Project", "Create new project");
 		newProject.setClickListener(this::createProjectHandler);
-		openProject = new Button(getNextBtnPos(), 1, Icon.LOAD);
-		openProject.setToolTip("Open Project", "Open an exsting project");
+		openProject = new Button(getNextBtnPos(), 1, Icons.LOAD);
+		openProject.setToolTip("Open Project", "Open an existing project");
 		openProject.setClickListener(this::loadProjectHandler);
-		exportProject = new Button(getNextBtnPos(), 1, Icon.EXPORT);
+		exportProject = new Button(getNextBtnPos(), 1, Icons.EXPORT);
 		exportProject.setToolTip("Export Project", "Export the project as a runnable");
 		exportProject.setClickListener(this::archiveProjectHandler);
 		exportProject.setEnabled(false);
@@ -89,14 +89,14 @@ public class BlueJ extends Application {
 		
 		addSeperator();
 		
-		newFile = new Button(getNextBtnPos(), 1, Icon.NEW_FILE);
+		newFile = new Button(getNextBtnPos(), 1, Icons.NEW_FILE);
 		newFile.setToolTip("New File", "Create new file");
 		newFile.setClickListener(this::newFileHandler);
-		deleteFile = new Button(getNextBtnPos(), 1, Icon.TRASH);
+		deleteFile = new Button(getNextBtnPos(), 1, Icons.TRASH);
 		deleteFile.setToolTip("Delete File", "Delete selected file");
 		deleteFile.setClickListener(this::deleteFileHandler);
 		deleteFile.setEnabled(false);
-		saveFile = new Button(getNextBtnPos(), 1, Icon.SAVE);
+		saveFile = new Button(getNextBtnPos(), 1, Icons.SAVE);
 		saveFile.setClickListener(this::saveFileHandler);
 		saveFile.setToolTip("Save File", "Save current file");
 		saveFile.setEnabled(false);
@@ -107,10 +107,10 @@ public class BlueJ extends Application {
 
 		addSeperator();
 		
-		copyAll = new Button(getNextBtnPos(), 1, Icon.COPY);
+		copyAll = new Button(getNextBtnPos(), 1, Icons.COPY);
 		copyAll.setToolTip("Copy All", "Copy all the contents of the current file to the clipboard");
 		copyAll.setEnabled(false);
-		paste = new Button(getNextBtnPos(), 1, Icon.CLIPBOARD);
+		paste = new Button(getNextBtnPos(), 1, Icons.CLIPBOARD);
 		paste.setToolTip("Paste", "Paste the contents of the clipboard to the current file");
 		paste.setEnabled(false);
 		
@@ -119,9 +119,11 @@ public class BlueJ extends Application {
 		
 		addSeperator();
 		
-		run = new Button(getNextBtnPos(), 1, Icon.PLAY);
+		run = new Button(getNextBtnPos(), 1, Icons.PLAY);
 		run.setToolTip("Run", "Run code");
-		stop = new Button(getNextBtnPos(), 1, Icon.STOP);
+		run.setClickListener(this::runProject);
+
+		stop = new Button(getNextBtnPos(), 1, Icons.STOP);
 		stop.setToolTip("Stop", "Stop running code");
 		
 		addComponent(run);
@@ -129,7 +131,7 @@ public class BlueJ extends Application {
 		
 		addSeperator();
 
-		settings = new Button(getNextBtnPos(), 1, Icon.WRENCH);
+		settings = new Button(getNextBtnPos(), 1, Icons.WRENCH);
 		settings.setToolTip("Settings", "Open and edit settings");
 		
 		addComponent(settings);
@@ -147,11 +149,16 @@ public class BlueJ extends Application {
 		
 		setProjectButtons(false);
 	}
-	
+
+	private void runProject(int x, int y, int b) {
+        for(String filename : this.currentProject.getAllFileNames()){
+            ProjectFile file = this.currentProject.getFile(filename);
+        }
+	}
+
 	////////////////////////// Project Buttons Handlers //////////////////////////
 	
-	private void createProjectHandler(Component c, int button) {
-			currentProject = new Project();
+	private void createProjectHandler(int x, int y, int b) {
 			SaveFile input = new SaveFile(this, new NBTTagCompound());
 			input.setResponseHandler((success, file)->{
 				if(success) {
@@ -165,7 +172,7 @@ public class BlueJ extends Application {
 			openDialog(input);
 	}
 	
-	private void loadProjectHandler(Component c, int button) {
+	private void loadProjectHandler(int x, int y, int b) {
 		unloadProject(() -> {
 			OpenFile open = new OpenFile(this);
 			open.setResponseHandler((success, file) -> {
@@ -178,7 +185,7 @@ public class BlueJ extends Application {
 		});
 	}
 	
-	private void archiveProjectHandler(Component c, int button) {
+	private void archiveProjectHandler(int x, int y, int b) {
 		NBTTagCompound tag = currentProject.archive();
 		// TODO: Change from Runner to a newer once we have newer one
 		SaveFile file = new SaveFile(this, tag);
@@ -197,19 +204,22 @@ public class BlueJ extends Application {
 	
 	////////////////////////// File Buttons Handlers //////////////////////////
 	
-	private void newFileHandler(Component c, int button) {
-		AddFileDialog input = new AddFileDialog("File name");
-		input.setResponseHandler((success, file) -> {
+	private void newFileHandler(int x, int y, int b) {
+		AddProjectDialog input = new AddProjectDialog("Project name");
+		input.setResponseHandler((success, project) -> {
 			if(success) {
-				files.addItem(file.getName());
-				currentProject.addFile(file);
+				project.getAllFileNames().forEach(files::addItem);
+				project.getAllFileNames().forEach((s)->{
+				    currentProject.addFile(project.getFile(s));
+                });
+				this.codeEditor.setHighlighter(currentProject.getProjectLanguage());
 			}
 			return true;
 		});
 		openDialog(input);
 	}
 	
-	private void deleteFileHandler(Component c, int button) {
+	private void deleteFileHandler(int x, int y, int b) {
 		files.removeItem(files.getSelectedIndex());
 		deleteFile.setEnabled(false);
 		codeEditor.setEditable(false);
@@ -219,7 +229,7 @@ public class BlueJ extends Application {
 		openedFile = null;
 	}
 	
-	private void saveFileHandler(Component c, int button) {
+	private void saveFileHandler(int x, int y, int b) {
 		saveOpenedFile();
 	}
 	
@@ -232,7 +242,7 @@ public class BlueJ extends Application {
 			}
 			openedFile = currentProject.getFile(item);
 			codeEditor.setText(openedFile.getCode());
-//			codeEditor.setLanguage(file.getLanguage().getHighlight());
+			codeEditor.setHighlighter(currentProject.getProjectLanguage());
 			
 			openedFileHash = codeEditor.getText().hashCode();
 			
@@ -247,7 +257,7 @@ public class BlueJ extends Application {
 	@Override
 	public boolean handleFile(File file) {
 		unloadProject(() -> {
-			currentProject = Project.loadProject(new BlueJResourceLocation("files", "root", file.getParent().getPath()));
+			currentProject = Project.loadProject(new BlueJResourceLocation("files", "root", Objects.requireNonNull(file.getParent()).getPath()));
 			
 			for(String fileName : currentProject.getAllFileNames()) {
 				files.addItem(fileName);
@@ -261,13 +271,11 @@ public class BlueJ extends Application {
 	public void unloadFile(Runnable runnable) {
 		if(openedFile != null && codeEditor.getText().hashCode() != openedFileHash) {
 			Confirmation shouldSave = new Confirmation("Do you want to save before exiting?");
-			shouldSave.setPositiveListener((c, button) -> {
+			shouldSave.setPositiveListener((x, y, b) -> {
 				saveOpenedFile();
 				runnable.run();
 			});
-			shouldSave.setNegativeListener((c, button) -> {
-				runnable.run();
-			});
+			shouldSave.setNegativeListener((x, y, b) -> runnable.run());
 			openDialog(shouldSave);
 		}else {
 			runnable.run();
@@ -279,7 +287,7 @@ public class BlueJ extends Application {
 			currentProject = null;
 			openedFile = null;
 			
-			files.setItems(new ArrayList<String>());
+			files.setItems(new ArrayList<>());
 			codeEditor.setText("");
 			
 			setProjectButtons(false);

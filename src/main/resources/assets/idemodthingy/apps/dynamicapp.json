@@ -1,0 +1,8 @@
+{
+  "name": "Window",
+  "author": "Itay and Alex",
+  "description": "${desc}",
+  "version": "1.0",
+  "icon": "idemodthingy:textures/icon/dynamicapp.png",
+  "screenshots": []
+}

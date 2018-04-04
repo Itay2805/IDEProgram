@@ -11,6 +11,8 @@ import com.mrcrayfish.device.programs.system.component.FileBrowser;
 import me.itay.idemodthingy.programs.bluej.resources.BlueJResolvedResloc;
 import net.minecraft.nbt.NBTTagCompound;
 
+import java.util.Objects;
+
 public class BlueJFileSystemResloc implements BlueJResolvedResloc {
 	
 	private boolean exists = true;
@@ -44,12 +46,12 @@ public class BlueJFileSystemResloc implements BlueJResolvedResloc {
 		}
 		
 		Drive drive = Laptop.getMainDrive();
-		Folder folder = drive.getRoot();
+		Folder folder = Objects.requireNonNull(drive).getRoot();
 		
 		String[] files = path.split("/");
 		for(int i = 0; i < files.length - 1; i++) {
 			if(files[i].isEmpty()) continue;
-			if(folder.getFolder(files[i]) != null) {
+			if(Objects.requireNonNull(folder).getFolder(files[i]) != null) {
 				folder = folder.getFolder(files[i]);
 				continue;
 			}
@@ -57,7 +59,7 @@ public class BlueJFileSystemResloc implements BlueJResolvedResloc {
 			break;
 		}
 		if(exists) {
-			File f = folder.getFile(files[files.length - 1]);
+			File f = Objects.requireNonNull(folder).getFile(files[files.length - 1]);
 			if(f != null && !f.isFolder()) {
 				this.file = folder.getFile(files[files.length - 1]);
 			} else if(f != null && f.isFolder()) {
@@ -106,7 +108,7 @@ public class BlueJFileSystemResloc implements BlueJResolvedResloc {
 		if(exists) return;
 		
 		Drive drive = Laptop.getMainDrive();
-		Folder folder = drive.getRoot();
+		Folder folder = Objects.requireNonNull(drive).getRoot();
 		
 		String[] files = path.split("/");
 		for(int i = 0; i < files.length - 1; i++) {
@@ -126,17 +128,17 @@ public class BlueJFileSystemResloc implements BlueJResolvedResloc {
 	
 	@Override
 	public void mkdir() {
-if(exists) return;
+		if(exists) return;
 		
 		Drive drive = Laptop.getMainDrive();
-		Folder folder = drive.getRoot();
+		Folder folder = Objects.requireNonNull(drive).getRoot();
 		
 		String[] files = path.split("/");
-		for(int i = 0; i < files.length; i++) {
-			if(files[i].isEmpty()) continue;
-			Folder f = folder.getFolder(files[i]);
-			if(f == null) {
-				f = new Folder(files[i]);
+		for (String file1 : files) {
+			if (file1.isEmpty()) continue;
+			Folder f = folder.getFolder(file1);
+			if (f == null) {
+				f = new Folder(file1);
 				folder.add(f);
 			}
 			folder = f;
@@ -168,7 +170,7 @@ if(exists) return;
 	@Override
 	public String[] listFiles() {
 		if(isFolder() && exists) {
-			return folder.getFiles().parallelStream().filter((f) -> !f.isFolder()).map((i) -> i.getName()).toArray((s) -> new String[s]);
+			return folder.getFiles().parallelStream().filter((f) -> !f.isFolder()).map(File::getName).toArray(String[]::new);
 		}
 		return new String[]{};
 	}
@@ -176,7 +178,7 @@ if(exists) return;
 	@Override
 	public String[] listFolders() {
 		if(isFolder() && exists) {
-			return folder.getFiles().parallelStream().filter((f) -> f.isFolder()).map((i) -> i.getName()).toArray((s) -> new String[s]);
+			return folder.getFiles().parallelStream().filter(File::isFolder).map(File::getName).toArray(String[]::new);
 		}
 		return new String[]{};
 	}

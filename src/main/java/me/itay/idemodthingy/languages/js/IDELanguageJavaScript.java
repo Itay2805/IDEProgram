@@ -1,11 +1,21 @@
 package me.itay.idemodthingy.languages.js;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringJoiner;
 
-import me.itay.idemodthingy.api.IDELanguageHighlight;
-import me.itay.idemodthingy.components.IDETextArea;
+import me.itay.idemodthingy.languages.js.tokens.JSDefault;
+import me.itay.idemodthingy.languages.js.tokens.JSKeywordGroup;
+import me.itay.idemodthingy.programs.bluej.Project;
+import me.itay.idemodthingy.programs.bluej.ProjectFile;
+import me.itay.idemodthingy.programs.bluej.api.Problem;
+import me.itay.idemodthingy.programs.bluej.api.SyntaxHighlighter;
+import me.itay.idemodthingy.programs.bluej.api.tokens.DynamicToken;
+import me.itay.idemodthingy.programs.bluej.api.tokens.Token;
 
-public class IDELanguageJavaScript implements IDELanguageHighlight {
+import static me.itay.idemodthingy.api.IDELanguageHighlight.*;
+
+public class IDELanguageJavaScript implements SyntaxHighlighter {
 
 	private static final String WITH_DELIMITER = "((?<=%1$s)|(?=%1$s))";
 	private static final String[] DELIMITERS = { "\\s", "\\p{Punct}", "\\p{Digit}+"  };
@@ -18,96 +28,58 @@ public class IDELanguageJavaScript implements IDELanguageHighlight {
 		}
 		DELIMITER = joiner.toString();
 	}
-	
+
 	@Override
-	public String[] tokenize(String text) {
-		return text.split(String.format(WITH_DELIMITER, "(" + DELIMITER + ")"));
+	public String getName() {
+		return "javascript";
 	}
-	
-	private String lastToken = "";
-	private boolean quote = false;
-	
+
+    private String lastToken = "";
+    private boolean quote = false;
+
 	@Override
-	public int getKeywordColor(String text) {
-		if(text.contains("\"")) {
-			if(quote) {
-				quote = false;
-				return COLOR_STRING;
-			}
-			quote = true;
-		}
-		if(quote) {
-			return COLOR_STRING;
-		}
+	public List<Token> parse(Project project, ProjectFile currentFile) {
+	    List<Token> ret = new ArrayList<>();
+		String text = currentFile.getCode();
 		if(text.length() == 0) {
-			return 0;
+			return ret;
 		}
-		int color = 0;
-		switch(text) {
-			case "break":
-			case "with":
-			case "do":
-			case "case":
-			case "else":
-			case "catch":
-			case "finally":
-			case "return":
-			case "continue":
-			case "switch":
-			case "while":
-			case "default":
-			case "if":
-			case "throw":
-			case "try":
-			case "for":
-				color = COLOR_STATEMENT;
-				break;
-			case "this":
-			case "var":
-			case "instanceof":
-			case "typeof":
-			case "debugger":
-			case "function":
-			case "delete":
-			case "in":
-			case "null":
-			case "true":
-			case "false":
-			case "void":
-			case "new":
-				color = COLOR_KEYWORD;
-				break;
-			default:
-				color = COLOR_DEFAULT;
-		}
-		if(lastToken.equals("function")) {
-			color = COLOR_FUNCTION;
-		}
-		if(lastToken.equals("new")) {
-			color = COLOR_TYPE;
-		}
-		if(isNumeric(text)) {
-			color =  COLOR_NUMBER;
-		}
-		if(color == COLOR_DEFAULT && Character.isAlphabetic(text.charAt(0))) {
-			color = COLOR_VARIABLE;
-		}
-		if(!text.trim().isEmpty()) lastToken = text;
-		return color;
+		String[] tokens = text.split(DELIMITER);
+		StringBuilder sb = new StringBuilder();
+		for(String token : tokens) {
+            if(text.contains("\"")) {
+                if(quote) {
+                    quote = false;
+                    ret.add(new DynamicToken(sb.toString()));
+                    continue;
+                }
+                quote = true;
+            }
+            if(quote){
+                sb.append(token);
+                continue;
+            }
+            if(JSKeywordGroup.getTokens().contains(token)){
+                ret.add(new JSKeywordGroup());
+                continue;
+            }
+        
+            if(lastToken.equals("function")){
+                ret.add(new DynamicToken(text));
+            }
+            lastToken = text;
+        }
+		return ret;
 	}
-	
-	public boolean isNumeric(String s) {  
-	    return s != null && s.matches("[-+]?\\d*\\.?\\d+");  
+
+	@Override
+	public List<Problem> getProblems(ProjectFile file) {
+		return null;
 	}
 
 	@Override
 	public void reset() {
 		quote = false;
-	}
-
-	@Override
-	public void errorCheck(IDETextArea area, String code) {
-		
 	}
 	
 }

@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 
+import me.itay.idemodthingy.IDEModProgramThingy;
+import me.itay.idemodthingy.programs.bluej.api.tokens.DynamicToken;
+import me.itay.idemodthingy.programs.bluej.api.tokens.StaticToken;
+import me.itay.idemodthingy.programs.bluej.api.tokens.TokenGroup;
 import org.lwjgl.input.Keyboard;
 
 import com.mrcrayfish.device.api.app.Component;
@@ -15,7 +19,7 @@ import me.itay.idemodthingy.programs.bluej.Project;
 import me.itay.idemodthingy.programs.bluej.ProjectFile;
 import me.itay.idemodthingy.programs.bluej.api.Problem;
 import me.itay.idemodthingy.programs.bluej.api.SyntaxHighlighter;
-import me.itay.idemodthingy.programs.bluej.api.Token;
+import me.itay.idemodthingy.programs.bluej.api.tokens.Token;
 import me.itay.idemodthingy.util.Timer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -37,7 +41,7 @@ public class BlueJCodeEditor extends Component {
 	private SyntaxHighlighter highlighter;
 	private Project project;
 	private ProjectFile currentFile;
-	private List<List<Token>> parsed;
+	private List<Token> tokens;
 	private List<Problem> problems;
 	private int errorLength;
 	private boolean textChanged = false;
@@ -58,7 +62,7 @@ public class BlueJCodeEditor extends Component {
 		FontRenderer font = Minecraft.getMinecraft().fontRendererObj;
 		
 		maxLines = (int) Math.floor((height - 4) / font.FONT_HEIGHT + 1);
-		errorLength = (int)(font.getCharWidth('~'));
+		errorLength = font.getCharWidth('~');
 	}
 	
 	
@@ -72,7 +76,7 @@ public class BlueJCodeEditor extends Component {
 			}
 			
 			if(textChanged) {
-				parsed = highlighter.parse(project, currentFile);
+				tokens = highlighter.parse(project, currentFile);
 				textChanged = false;
 			}
 		}
@@ -95,6 +99,7 @@ public class BlueJCodeEditor extends Component {
 		// render text
 		if(highlighter == null) {
 			// no highlighter
+			IDEModProgramThingy.LOGGER.info("No highlighter attached! Using default highlighting!");
 			for(int i = from; i < from + maxLines; i++) {
 				if(i >= lines.size()) {
 					break;
@@ -104,19 +109,36 @@ public class BlueJCodeEditor extends Component {
 			}
 		}else {
 			// with highlight
+            IDEModProgramThingy.LOGGER.info("Using highlighter for: " + highlighter.getName());
 			for(int i = from; i < from + maxLines; i++) {
 				if(i >= lines.size()) {
 					break;
 				}
-				List<Token> tokens = parsed.get(i);
 				int Y = i * font.FONT_HEIGHT;
 				int X = 0;
 				for(Token token : tokens) {
-					String text = token.getToken().replace("\t", "    ");
+				    String text = "";
+				    if(token instanceof StaticToken){
+                        text = ((StaticToken)token).getToken().replace("\t", "    ");
+                    }else if(token instanceof DynamicToken){
+                        text = ((DynamicToken)token).getToken().replace("\t", "    ");
+                    }
 					font.drawString(text, 2 + xPosition + X, 2 + yPosition + Y, token.getColor());
 					X += font.getStringWidth(text);
 				}
 			}
+            for(Problem problem : problems) {
+                if(from >= problem.getLine() || from + maxLines < problem.getLine()) {
+                    continue;
+                }
+                int X = font.getStringWidth(lines.get(problem.getLine()).substring(0, problem.getColumn()));
+                int Y = problem.getLine() * font.FONT_HEIGHT * 2;
+                int length = problem.getLength();
+                while((length--) > 0) {
+                    font.drawString("~", 2 + xPosition + X, 2 + yPosition + Y, problem.getColor());
+                    X += errorLength;
+                }
+            }
 		}
 		
 		if(editable) {
@@ -125,22 +147,6 @@ public class BlueJCodeEditor extends Component {
 				int X = font.getStringWidth(getCurrentLine().substring(0, cursorX).replace("\t", "   "));
 				int Y = (cursorY - from) * font.FONT_HEIGHT;
 				font.drawString("|", 2 + xPosition + X, 2 + yPosition + Y, cursorColor);
-			}
-		}
-		
-		// render errors
-		if(highlighter != null) {
-			for(Problem problem : problems) {
-				if(from >= problem.getLine() || from + maxLines < problem.getLine()) {
-					continue;
-				}
-				int X = font.getStringWidth(lines.get(problem.getLine()).substring(0, problem.getColumn()));
-				int Y = problem.getLine() * font.FONT_HEIGHT * 2;
-				int length = problem.getLength();
-				while((length--) > 0) {
-					font.drawString("~", 2 + xPosition + X, 2 + yPosition + Y, problem.getColor());
-					X += errorLength;
-				}
 			}
 		}
 	}
@@ -165,7 +171,7 @@ public class BlueJCodeEditor extends Component {
 			i++;
 		}
 		cursorX = i;
-		
+
 		System.out.println(cursorX);
 		System.out.println(cursorY);
 	}
@@ -176,53 +182,60 @@ public class BlueJCodeEditor extends Component {
 		cursorState = true;
 		
 		switch(code) {
-		case Keyboard.KEY_BACK:
-			{
-				if(cursorY == 0 && cursorX == 0) return;
-				String line = getCurrentLine();
-				String before = "", after = "";
-				if(cursorX < line.length()) after = line.substring(cursorX);
-				if(cursorX > 0) before = line.substring(0, cursorX - 1);
-				lines.set(cursorY, before + after);
-				cursorX--;
-				if(cursorX < 0) {
-					lines.remove(cursorY);
-					cursorY--;
-					cursorX = getCurrentLine().length();
-				}
-			}
-			break;
-		case Keyboard.KEY_LEFT:
-			{
-				cursorX--;
-				if(cursorX < 0) {
-					cursorY--;
-					if(cursorY < 0) {
-						cursorY = 0;
-						cursorX = 0;
-					}else {
-						cursorX = getCurrentLine().length();
-					}
-				}
-			}
-			break;
-		case Keyboard.KEY_RIGHT:
-			{
-				cursorX++;
-				if(cursorX > getCurrentLine().length()) {
-					cursorY++;
-					if(cursorY >= lines.size()) {
-						cursorY = lines.size() - 1;
-						if(cursorY < 0) cursorY = 0;
-					}
-					cursorX = getCurrentLine().length();
-					if(cursorX < 0) cursorX = 0;
-				}
-			}
-			break;
-		case Keyboard.KEY_TAB: write("\t"); break;
-		case Keyboard.KEY_RETURN: write("\n"); break;
-		default: write(character + ""); break;
+            case Keyboard.KEY_BACK: {
+                if (cursorY == 0 && cursorX == 0) return;
+                String line = getCurrentLine();
+                String before = "", after = "";
+                if (cursorX < line.length()) after = line.substring(cursorX);
+                if (cursorX > 0) before = line.substring(0, cursorX - 1);
+                lines.set(cursorY, before + after);
+                cursorX--;
+                if (cursorX < 0) {
+                    lines.remove(cursorY);
+                    cursorY--;
+                    cursorX = getCurrentLine().length();
+                }
+            }
+            break;
+            case Keyboard.KEY_LEFT: {
+                cursorX--;
+                if (cursorX < 0) {
+                    cursorY--;
+                    if (cursorY < 0) {
+                        cursorY = 0;
+                        cursorX = 0;
+                    } else {
+                        cursorX = getCurrentLine().length();
+                    }
+                }
+            }
+            break;
+            case Keyboard.KEY_RIGHT: {
+                cursorX++;
+                if (cursorX > getCurrentLine().length()) {
+                    cursorY++;
+                    if (cursorY >= lines.size()) {
+                        cursorY = lines.size() - 1;
+                        if (cursorY < 0) cursorY = 0;
+                    }
+                    cursorX = getCurrentLine().length();
+                    if (cursorX < 0) cursorX = 0;
+                }
+            }
+            break;
+            case Keyboard.KEY_UP:
+            {
+                if(cursorY < 0) break;
+                cursorY--;
+            }
+            case Keyboard.KEY_DOWN:
+            {
+                if(cursorY >= this.height) break;
+                cursorY++;
+            }
+		    case Keyboard.KEY_TAB: write("\t"); break;
+		    case Keyboard.KEY_RETURN: write("\n"); break;
+		    default: write(character + ""); break;
 		}
 	}
 	

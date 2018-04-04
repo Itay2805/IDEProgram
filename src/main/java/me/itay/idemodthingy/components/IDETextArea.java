@@ -5,13 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 
+import me.itay.idemodthingy.programs.bluej.ProjectFile;
+import me.itay.idemodthingy.programs.bluej.api.SyntaxHighlighter;
+import me.itay.idemodthingy.programs.bluej.api.tokens.DynamicToken;
+import me.itay.idemodthingy.programs.bluej.api.tokens.StaticToken;
+import me.itay.idemodthingy.programs.bluej.api.tokens.Token;
 import org.lwjgl.input.Keyboard;
 
 import com.mrcrayfish.device.api.app.Component;
 import com.mrcrayfish.device.api.utils.RenderUtil;
 import com.mrcrayfish.device.core.Laptop;
 
-import me.itay.idemodthingy.api.IDELanguageHighlight;
 import me.itay.idemodthingy.util.Timer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -25,7 +29,6 @@ public class IDETextArea extends Component {
 	private static final int PADDING = 2;
 
 	private int width, height;
-	private List<String> lines = new ArrayList<>();
 	private int updateCounter = 0;
 	private int cursorX = 0;
 	private int cursorY = 0;
@@ -45,8 +48,10 @@ public class IDETextArea extends Component {
 	
 	private int backgroundColour = Color.DARK_GRAY.getRGB();
 	private int borderColour = Color.BLACK.getRGB();
-	private IDELanguageHighlight language;
 	private FontRenderer font;
+	private ProjectFile openedFile;
+	private SyntaxHighlighter language;
+	private List<String> lines;
 	
 	public class ErrorHighlight {
 		private int color = Color.RED.getRGB();
@@ -54,7 +59,7 @@ public class IDETextArea extends Component {
 		private String error = "Error";
 	}
 	
-	public IDETextArea(int left, int top, int width, int height, IDELanguageHighlight language) {
+	public IDETextArea(int left, int top, int width, int height, ProjectFile openedFile) {
 		super(left, top);
 		timer = new Timer();
 		
@@ -63,10 +68,10 @@ public class IDETextArea extends Component {
 		
 		this.width = width;
 		this.height = height;
-		this.language = language;
-		
-		lines.add("");
-		
+		this.openedFile = openedFile;
+		this.language = openedFile.getParentProject().getProjectLanguage();
+        this.lines = openedFile.getCodeLines();
+
 		font = Minecraft.getMinecraft().fontRendererObj;
 		
 		lineCount = height / font.FONT_HEIGHT;
@@ -81,12 +86,16 @@ public class IDETextArea extends Component {
 	public void clearErrors() {
 		errors.clear();
 	}
+
+	public void setOpenedFile(ProjectFile file){
+	    this.openedFile = file;
+    }
 	
 	@Override
 	public void handleTick() {
 		if(timer.elapsed() >= 0.5) {
 			timer.reset();
-			language.errorCheck(this, getText());
+			language.getProblems(this.openedFile);
 		}
 		updateCounter++;
 	}
@@ -104,19 +113,18 @@ public class IDETextArea extends Component {
 		
 		int currentY = 0;
 		for(int i = from; i < to; i++) {
-			String text = lines.get(i);
-			String[] textToRender = language.tokenize(text);
+			List<Token> tokens = language.parse(this.openedFile.getParentProject(), this.openedFile);
 			int currentX = 0;
-			for(String word : textToRender) {
-				if(word.length() == 0) continue;
-//				if(currentX + font.getStringWidth(word) >= width) {
-//					currentX = 0;
-//					currentY += font.FONT_HEIGHT;
-//				}
-
-				font.drawSplitString(word + " ", xPosition + PADDING + 1 + currentX, yPosition + PADDING + 2 + currentY, width - PADDING * 2 - 2, language.getKeywordColor(word));
-				currentX += font.getStringWidth(word);
-			}
+            for(Token token : tokens) {
+                String text = "";
+                if(token instanceof StaticToken){
+                    text = ((StaticToken)token).getToken().replace("\t", "    ");
+                }else if(token instanceof DynamicToken){
+                    text = ((DynamicToken)token).getToken().replace("\t", "    ");
+                }
+                font.drawString(text, 2 + xPosition + currentX, 2 + yPosition + currentY, token.getColor());
+                currentX += font.getStringWidth(text);
+            }
 			currentY += font.FONT_HEIGHT;
 		}
 		
@@ -137,12 +145,12 @@ public class IDETextArea extends Component {
 		for(ErrorHighlight err : errors) {
 			int X = font.getStringWidth(getCurrentLine().substring(0, err.column));
 			int Y = (err.line - from) * font.FONT_HEIGHT + font.FONT_HEIGHT;
-			String finale = "";
+			StringBuilder finale = new StringBuilder();
 			int length = font.getStringWidth(getCurrentLine().substring(err.column, err.column + err.length));
 			for(int i = 0; i <= (length / errorLength); i++) {
-				finale += "~";
+				finale.append("~");
 			}
-			font.drawSplitString(finale, xPosition + PADDING + 1 + X, yPosition + PADDING + 2 + Y, width - PADDING * 2 - 2, err.color);
+			font.drawSplitString(finale.toString(), xPosition + PADDING + 1 + X, yPosition + PADDING + 2 + Y, width - PADDING * 2 - 2, err.color);
 			if(RenderUtil.isMouseInside(mouseX - xPosition, mouseY - yPosition, X, Y - font.FONT_HEIGHT / 2, X + length, Y + font.FONT_HEIGHT / 2)) {
 				Gui.drawRect(mouseX, mouseY - (font.FONT_HEIGHT + 4), mouseX + font.getStringWidth(err.error) + 4, mouseY, borderColour);
 				Gui.drawRect(mouseX + 1, mouseY - (font.FONT_HEIGHT + 4) + 1, mouseX + font.getStringWidth(err.error) + 4 - 1, mouseY - 1, backgroundColour);
@@ -303,7 +311,7 @@ public class IDETextArea extends Component {
 		}
 	}
 	
-	public void setLanguage(IDELanguageHighlight language) {
+	public void setLanguage(SyntaxHighlighter language) {
 		this.language = language;
 	}
 	
