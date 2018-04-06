@@ -72,11 +72,11 @@ public class IDETextArea extends Component {
 		this.language = openedFile.getParentProject().getProjectLanguage();
         this.lines = openedFile.getCodeLines();
 
-		font = Minecraft.getMinecraft().fontRendererObj;
+		font = Minecraft.getMinecraft().fontRenderer;
 		
 		lineCount = height / font.FONT_HEIGHT;
 		
-		errorLength = Minecraft.getMinecraft().fontRendererObj.getStringWidth("~");
+		errorLength = Minecraft.getMinecraft().fontRenderer.getStringWidth("~");
 	}
 	
 	public void addError(ErrorHighlight highlight) {

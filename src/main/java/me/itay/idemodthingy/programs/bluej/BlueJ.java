@@ -13,6 +13,7 @@ import com.mrcrayfish.device.api.app.component.Button;
 import com.mrcrayfish.device.api.app.component.ItemList;
 import com.mrcrayfish.device.api.io.File;
 
+import me.itay.idemodthingy.api.IDELanguageManager;
 import me.itay.idemodthingy.programs.bluej.components.BlueJCodeEditor;
 import me.itay.idemodthingy.programs.bluej.resources.BlueJResourceLocation;
 import net.minecraft.nbt.NBTTagCompound;
@@ -162,10 +163,15 @@ public class BlueJ extends Application {
 			SaveFile input = new SaveFile(this, new NBTTagCompound());
 			input.setResponseHandler((success, file)->{
 				if(success) {
-					unloadProject(() -> {
-						BlueJResourceLocation resloc = new BlueJResourceLocation("files", "root", file.getPath());
-						currentProject = Project.loadProject(resloc);
+					SelectLanguageDialog langinput = new SelectLanguageDialog("Select Language");
+					langinput.setResponseHandler((s, e)->{
+                        currentProject = new Project(
+                                file.getName(),
+                                IDELanguageManager.getSupport().get(e).getHighlight()
+                        );
+						return true;
 					});
+					openDialog(langinput);
 				}
 				return true;
 			});
@@ -205,18 +211,7 @@ public class BlueJ extends Application {
 	////////////////////////// File Buttons Handlers //////////////////////////
 	
 	private void newFileHandler(int x, int y, int b) {
-		AddProjectDialog input = new AddProjectDialog("Project name");
-		input.setResponseHandler((success, project) -> {
-			if(success) {
-				project.getAllFileNames().forEach(files::addItem);
-				project.getAllFileNames().forEach((s)->{
-				    currentProject.addFile(project.getFile(s));
-                });
-				this.codeEditor.setHighlighter(currentProject.getProjectLanguage());
-			}
-			return true;
-		});
-		openDialog(input);
+
 	}
 	
 	private void deleteFileHandler(int x, int y, int b) {

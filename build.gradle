@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.2.0'
+    ext.kotlin_version = '1.2.30'
     repositories {
         jcenter()
         maven { url = "http://files.minecraftforge.net/maven" }
@@ -39,7 +39,7 @@ minecraft {
     // stable_#            stables are built at the discretion of the MCP team.
     // Use non-default mappings at your own risk. they may not always work.
     // simply re-run your setup task after changing the mappings to update your workspace.
-    mappings = "snapshot_20161220"
+    mappings = "snapshot_20171003"
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 }
 
@@ -53,6 +53,7 @@ dependencies {
 
     compile name: 'joml-1.9.4'
     compile name: 'device-api-0.3.0-1.12.2'
+//    compile "com.mrcrayfish:device-api:0.3.0-1.12.2"
 
     compile group: "org.jetbrains.kotlin", name: "kotlin-stdlib", version: kotlin_version
     compile group: "org.jetbrains.kotlin", name: "kotlin-stdlib-jre8", version: kotlin_version
@@ -99,4 +100,8 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+}
+
+repositories {
+    maven { url = "https://mrcrayfish.com/maven" }
 }

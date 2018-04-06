@@ -59,7 +59,7 @@ public class BlueJCodeEditor extends Component {
 		errorTimer.reset();
 		cursorTimer.reset();
 		
-		FontRenderer font = Minecraft.getMinecraft().fontRendererObj;
+		FontRenderer font = Minecraft.getMinecraft().fontRenderer;
 		
 		maxLines = (int) Math.floor((height - 4) / font.FONT_HEIGHT + 1);
 		errorLength = font.getCharWidth('~');
@@ -94,7 +94,7 @@ public class BlueJCodeEditor extends Component {
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		Gui.drawRect(xPosition, yPosition, xPosition + width, yPosition + height, backgroundColor);
 		
-		FontRenderer font = Minecraft.getMinecraft().fontRendererObj;
+		FontRenderer font = Minecraft.getMinecraft().fontRenderer;
 		
 		// render text
 		if(highlighter == null) {
@@ -155,7 +155,7 @@ public class BlueJCodeEditor extends Component {
 	protected void handleMouseClick(int mouseX, int mouseY, int mouseButton) {
 		if(!GuiHelper.isMouseInside(mouseX, mouseY, xPosition, yPosition, xPosition + width, yPosition + height)) return;
 		
-		FontRenderer font = Minecraft.getMinecraft().fontRendererObj;
+		FontRenderer font = Minecraft.getMinecraft().fontRenderer;
 		int X = mouseX - xPosition;
 		int Y = (mouseY - yPosition) / font.FONT_HEIGHT;
 		if(Y >= lines.size()) Y = lines.size();
